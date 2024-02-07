@@ -1,1 +1,0 @@
-life.any.db.tar.gz.sig
