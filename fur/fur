@@ -39,6 +39,8 @@ _fur() {
     _ns \
     _pkg \
     _url
+  _http="https://github.com"
+  _ns="themartiancompany"
   _url="${_http}/${_ns}/fur"
   _packages=(
     "$@"
@@ -46,7 +48,7 @@ _fur() {
   _msg_info \
     "installing ${_packages[*]}"
   _pacman_opts+=(
-    "-U"
+    -U
   )
   _git_opts=(
     --single-branch
@@ -54,27 +56,55 @@ _fur() {
   )
   for _pkg \
     in "${_packages[@]}"; do
-    cd \
-      "${_repo}"
+    _repo="$( \
+      mktemp \
+        -d)"
     _opts=(
       "${_git_opts[@]}"
       --branch="${_pkg}"
     )
-    _repo="$( \
-      mktemp \
-        -d)"
     cd \
       "${_repo}"
     git \
       clone \
         "${_opts[@]}" \
         "${_url}"
+    find .
     _pkgs=(
-      "fur/"*"/"*".pkg."*
-      )
+      $( \
+        find \
+          . | \
+	  grep \
+            "pkg")
+    )
+    _sigs=(
+      $( \
+        find \
+	  . \
+	  grep \
+	    "pkg")
+    )
+    _msg_info \
+      "installing $( \
+        basename \
+          "${_pkgs[*]}")"
+    mv \
+      "${_pkgs[@]}" \
+      .
+    rm \
+      "${_sigs[@]}"
+    _msg_info \
+      "installing $( \
+        basename \
+          "${_pkgs[*]}")"
+
     pacman \
       "${_pacman_opts[@]}" \
-      "${_pkgs[@]}"
+      $( \
+        find \
+	  . \
+	  grep \
+	    "pkg")
   done
   cd \
     "${OLDPWD}"
@@ -164,4 +194,4 @@ installed_packages=(
 _config_user_init \
   "fur"
 _fur \
-  ${installed_packages[@]}"
+  "${installed_packages[@]}"
