@@ -49,6 +49,7 @@ _fur() {
     "installing ${_packages[*]}"
   _pacman_opts+=(
     -U
+    --noconfirm
   )
   _git_opts=(
     --single-branch
@@ -72,45 +73,49 @@ _fur() {
     _pkgs=(
       $( \
         find \
-          . | \
-	  grep \
-            "pkg")
+          . \
+          -iname \
+	    '*.pkg.*' \
+	  -exec echo ${_repo}/{} ';')
     )
+    _msg_info \
+      "found ${_pkgs[*]}"
     _sigs=(
       $( \
         find \
-	  . | \
-	  grep \
-	    "sig")
+          . \
+          -iname \
+	    '*.sig' \
+	  -exec echo ${_repo}/{} ';')
     )
     _msg_info \
-      "installing $( \
-        basename \
-          "${_pkgs[*]}")"
+      "removing signatures ${_sigs[*]}"
     mv \
-      "${_pkgs[@]}" \
+      "${_sigs[@]}" \
       .
     rm \
-      "${_sigs[@]}"
+      *".sig"
     _pkgs=(
       $( \
         find \
           . | \
 	  grep \
-            "pkg")
+	    "pkg")
     )
     _msg_info \
-      "installing $( \
-        basename \
-          "${_pkgs[*]}")"
-
+      "moving ${_pkgs[*]}"
+    mv \
+      "${_pkgs[@]}" \
+      .
+    _pkgs=(
+      $(ls \
+	  *".pkg."*)
+    )
+    _msg_info \
+      "installing ${_pkgs[*]}"
     pacman \
       "${_pacman_opts[@]}" \
-      $( \
-        find \
-	  . \
-	  grep \
-	    "pkg")
+      "${_pkgs[@]}"
   done
   cd \
     "${OLDPWD}"
