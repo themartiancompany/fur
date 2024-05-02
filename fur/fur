@@ -69,7 +69,6 @@ _fur() {
       clone \
         "${_opts[@]}" \
         "${_url}"
-    find .
     _pkgs=(
       $( \
         find \
@@ -80,9 +79,9 @@ _fur() {
     _sigs=(
       $( \
         find \
-	  . \
+	  . | \
 	  grep \
-	    "pkg")
+	    "sig")
     )
     _msg_info \
       "installing $( \
@@ -93,6 +92,13 @@ _fur() {
       .
     rm \
       "${_sigs[@]}"
+    _pkgs=(
+      $( \
+        find \
+          . | \
+	  grep \
+            "pkg")
+    )
     _msg_info \
       "installing $( \
         basename \
