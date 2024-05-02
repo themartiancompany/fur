@@ -4,7 +4,7 @@
 PREFIX ?= /usr/local
 DOC_DIR=$(DESTDIR)$(PREFIX)/share/doc/fur
 DATA_DIR=$(DESTDIR)$(PREFIX)/share/fur
-LIB_DIR=$(DESTDIR)$(PREFIX)/bin
+BIN_DIR=$(DESTDIR)$(PREFIX)/bin
 
 DOC_FILES=$(wildcard *.rst)
 SCRIPT_FILES=$(wildcard fur/*)
