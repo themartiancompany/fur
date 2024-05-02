@@ -16,7 +16,7 @@ check: shellcheck
 shellcheck:
 	shellcheck -s bash $(SCRIPT_FILES)
 
-install: install-libcrash-bash install-doc install-examples
+install: install-fur install-doc
 
 install-doc:
 
