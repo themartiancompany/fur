@@ -49,6 +49,7 @@ _fur() {
     "installing ${_packages[*]}"
   _pacman_opts+=(
     -U
+    --overwrite="*"
     --noconfirm
   )
   _git_opts=(
