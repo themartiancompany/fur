@@ -80,7 +80,7 @@ _fur() {
     _sigs=(
       $( \
         find \
-	  . \
+	  . | \
 	  grep \
 	    "pkg")
     )
@@ -92,17 +92,17 @@ _fur() {
       "${_pkgs[@]}" \
       .
     rm \
+      -rf \
       "${_sigs[@]}"
     _msg_info \
       "installing $( \
         basename \
           "${_pkgs[*]}")"
-
     pacman \
       "${_pacman_opts[@]}" \
       $( \
         find \
-	  . \
+	  . | \
 	  grep \
 	    "pkg")
   done
