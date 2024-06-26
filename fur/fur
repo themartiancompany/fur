@@ -22,6 +22,7 @@ _requirements() {
 
 # shellcheck disable=SC2034
 _global_variables() {
+  install_date=""
   package_manager=""
   installed_packages=()
   color=""
@@ -51,9 +52,8 @@ _fur() {
   _msg_info \
     "installing ${_packages[*]}"
   _pkgmgr_opts+=(
-    -U
-    --overwrite="*"
-    --noconfirm
+    $(_get_pkgmgr_opts \
+        "${_pkgmgr}")
   )
   _git_opts=(
     --single-branch
@@ -170,13 +170,43 @@ _get_package_manager() {
     "${_pkgmgr}"
 }
 
+_get_pkgmgr_opts() {
+  local \
+    _pkgmgr="${1}" \
+    _name \
+    _opts=()
+  _name="$( \
+    basename \
+      "${_pkgmgr}")"
+  if [[ "${_name}" == "inteppacman" ]]; then
+    _opts+=(
+      --
+    )
+  fi
+  _opts+=(
+    -U
+    --overwrite="*"
+    --noconfirm
+  )
+  echo \
+    "${_opts[@]}"
+}
+
 # Set defaults and, if present, overrides
 # from fur command line option parameters
 _set_overrides() {
   _set_override \
+    "install" \
+    "date" \
+    "$(_get_date_human)"
+  _set_override \
     "package" \
     "manager" \
-    "$(_get_package_manager)"
+    "pacman"
+    # TODO:
+    # produce a working pacman which can be
+    # run as root (see pacman-root-ur tmc repo)
+    # "$(_get_package_manager)"
   if [[ -v override_color ]]; then
     color="${override_color}"
   elif [[ -z "${color}" ]]; then
@@ -187,6 +217,14 @@ _set_overrides() {
   elif [[ -z "${quiet}" ]]; then
     quiet="y"
   fi
+}
+
+# Shows configuration options.
+_show_config() {
+  _msg_info "${app_name} configuration"
+  _msg_info "             Install date:   $(_get "install" "date")"
+  _msg_info "          Package manager:   $(_get "package" "manager")"
+  _msg_info " To be installed packages:   ${installed_packages[*]}"
 }
 
 # Show help usage, with an exit status.
@@ -256,8 +294,10 @@ shift \
 installed_packages=(
   $@
 )
+_set_overrides
 _config_user_init \
   "$(_get "app" "name")"
+_show_config
 _fur \
   "$(_get \
        "package" \
