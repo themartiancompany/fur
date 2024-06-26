@@ -22,32 +22,35 @@ _requirements() {
 
 # shellcheck disable=SC2034
 _global_variables() {
+  package_manager=""
   installed_packages=()
   color=""
   quiet=""
 }
 
-
 # $@: packages
 _fur() {
   local \
+    _pkgmgr="${1}" \
     _packages=() \
     _pkgs=() \
-    _pacman_opts=() \
+    _pkgmgr_opts=() \
     _git_opts=() \
     _http \
     _ns \
     _pkg \
     _url
-  _http="https://github.com"
-  _ns="themartiancompany"
-  _url="${_http}/${_ns}/fur"
+  shift \
+    1
   _packages=(
     "$@"
   )
+  _http="https://github.com"
+  _ns="themartiancompany"
+  _url="${_http}/${_ns}/fur"
   _msg_info \
     "installing ${_packages[*]}"
-  _pacman_opts+=(
+  _pkgmgr_opts+=(
     -U
     --overwrite="*"
     --noconfirm
@@ -122,8 +125,8 @@ _fur() {
       "installing $( \
         basename \
           "${_pkgs[*]}")"
-    pacman \
-      "${_pacman_opts[@]}" \
+    "${_pkgmgr}" \
+      "${_pkgmgr_opts[@]}" \
       $( \
         find \
 	  . | \
@@ -135,17 +138,45 @@ _fur() {
     )
     _msg_info \
       "installing ${_pkgs[*]}"
-    pacman \
-      "${_pacman_opts[@]}" \
+    "${_pkgmgr}" \
+      "${_pkgmgr_opts[@]}" \
       "${_pkgs[@]}"
   done
   cd \
     "${OLDPWD}"
 }
 
+_get_package_manager() {
+  local \
+    _fallback_name="pacman" \
+    _name \
+    _pkgmgr
+  _name="intep${_fallback_name}"
+  _pkgmgr="$( \
+    command \
+      -v \
+      "${_name}")"
+  if [[ "${_pkgmgr}" == "" ]]; then
+    _pkgmgr="$( \
+      command \
+        -v \
+        "${_fallback_name}")"
+  fi
+  if [[ "${_pkgmgr}" == "" ]]; then
+    _msg_error \
+      "install either ${_name} or ${_fallback_name}"
+  fi
+  echo \
+    "${_pkgmgr}"
+}
+
 # Set defaults and, if present, overrides
-# from arch-grub command line option parameters
+# from fur command line option parameters
 _set_overrides() {
+  _set_override \
+    "package" \
+    "manager" \
+    "$(_get_package_manager)"
   if [[ -v override_color ]]; then
     color="${override_color}"
   elif [[ -z "${color}" ]]; then
@@ -175,6 +206,8 @@ Usage:
     [options]
     [packages]
   options:
+     -p                   Package manager.
+                          Default: $(_get "package" "manager")
      -c                   Colors.
      -h                   This message.
      -v                   Enable verbose output
@@ -193,10 +226,11 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'cvh?' \
+    'p:cvh?' \
     arg; do
   case \
     "${arg}" in
+    p) override_package_manager="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
     h|?) _set_overrides && \
@@ -216,15 +250,16 @@ shift \
   $(( \
     OPTIND - 1 \
   ))
-
 (( $# < 1 )) && \
   _usage \
     1
- 
 installed_packages=(
   $@
 )
 _config_user_init \
-  "fur"
+  "$(_get "app" "name")"
 _fur \
+  "$(_get \
+       "package" \
+       "manager")" \
   "${installed_packages[@]}"
