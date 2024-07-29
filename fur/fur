@@ -25,6 +25,8 @@ _global_variables() {
   install_date=""
   package_manager=""
   installed_packages=()
+  download_only=""
+  repo_dir=""
   color=""
   quiet=""
 }
@@ -33,6 +35,8 @@ _global_variables() {
 _fur() {
   local \
     _pkgmgr="${1}" \
+    _noinstall="${2}" \
+    _repo_dir="${3}" \
     _packages=() \
     _pkgs=() \
     _pkgmgr_opts=() \
@@ -42,7 +46,7 @@ _fur() {
     _pkg \
     _url
   shift \
-    1
+    3
   _packages=(
     "$@"
   )
@@ -61,9 +65,11 @@ _fur() {
   )
   for _pkg \
     in "${_packages[@]}"; do
-    _repo="$( \
-      mktemp \
-        -d)"
+    if [[ "${noinstall}" != "true" ]] && \
+      _repo="$( \
+        mktemp \
+          -d)"
+    fi
     _opts=(
       "${_git_opts[@]}"
       --branch="${_pkg}"
@@ -207,6 +213,14 @@ _set_overrides() {
     # produce a working pacman which can be
     # run as root (see pacman-root-ur tmc repo)
     # "$(_get_package_manager)"
+  _set_override \
+    "repo" \
+    "dir" \
+    "${HOME}"
+  _set_override \
+    "download" \
+    "only" \
+    "false"
   if [[ -v override_color ]]; then
     color="${override_color}"
   elif [[ -z "${color}" ]]; then
@@ -224,6 +238,8 @@ _show_config() {
   _msg_info "${app_name} configuration"
   _msg_info "             Install date:   $(_get "install" "date")"
   _msg_info "          Package manager:   $(_get "package" "manager")"
+  _msg_info "            Download only:   $(_get "download" "only")"
+  _msg_info "           Repo directory:   $(_get "repo" "dir")"
   _msg_info " To be installed packages:   ${installed_packages[*]}"
 }
 
@@ -244,10 +260,16 @@ Usage:
     [options]
     [packages]
   options:
-     -p                   Package manager.
-                          Default: $(_get "package" "manager")
-     -c                   Colors.
-     -h                   This message.
+     -p <package_manager>   Package manager.
+                            Default: $(_get "package" "manager")
+     -d                     Download only (noinstall).
+                            Default: $(_get "download" "only")
+     -w <repo_dir>          Directory containing the fur tree.
+                            To be set when download only is true,
+			    otherwise is temporary.
+                            Default: $(_get "repo" "dir")
+     -c                     Colors.
+     -h                     This message.
      -v                   Enable verbose output
 ENDUSAGETEXT
   _printf \
@@ -264,11 +286,13 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'p:cvh?' \
+    'p:dw:cvh?' \
     arg; do
   case \
     "${arg}" in
     p) override_package_manager="${OPTARG}" ;;
+    d) override_download_only="true" ;;
+    w) override_repo_dir="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
     h|?) _set_overrides && \
@@ -298,8 +322,20 @@ _set_overrides
 _config_user_init \
   "$(_get "app" "name")"
 _show_config
+app_opts=(
+  "$(_get \
+       "package" \
+       "manager")"
+  "$(_get \
+       "download" \
+       "only")"
+  "$(_get \
+       "repo" \
+       "dir")"
+  "${installed_packages[@]}"
+)
 _fur \
   "$(_get \
        "package" \
        "manager")" \
-  "${installed_packages[@]}"
+  "${app_opts[@]}"
