@@ -135,7 +135,7 @@ _fur() {
   )
   for _pkg \
     in "${_packages[@]}"; do
-    if [[ "${noinstall}" != "true" ]] && \
+    if [[ "${noinstall}" != "true" ]]; then
       _repo="$( \
         mktemp \
           -d)"
