@@ -106,7 +106,7 @@ _fur() {
   local \
     _pkgmgr="${1}" \
     _noinstall="${2}" \
-    _repo_dir="${3}" \
+    _repo="${3}" \
     _packages=() \
     _pkgs=() \
     _pkgmgr_opts=() \
@@ -135,7 +135,7 @@ _fur() {
   )
   for _pkg \
     in "${_packages[@]}"; do
-    if [[ "${noinstall}" != "true" ]]; then
+    if [[ "${_noinstall}" != "true" ]]; then
       _repo="$( \
         mktemp \
           -d)"
@@ -342,7 +342,4 @@ app_opts=(
   "${installed_packages[@]}"
 )
 _fur \
-  "$(_get \
-       "package" \
-       "manager")" \
   "${app_opts[@]}"
