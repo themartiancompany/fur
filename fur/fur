@@ -31,6 +31,76 @@ _global_variables() {
   quiet=""
 }
 
+_install_pkgs() {
+  _pkgs=(
+    $( \
+      find \
+        . \
+        -iname \
+          '*.pkg.*' \
+        -exec echo ${_repo}/{} ';')
+  )
+  _msg_info \
+    "found ${_pkgs[*]}"
+  _sigs=(
+    $( \
+      find \
+        . \
+        -iname \
+          '*.sig' \
+        -exec echo ${_repo}/{} ';')
+  )
+  _msg_info \
+    "removing signatures ${_sigs[*]}"
+  mv \
+    "${_sigs[@]}" \
+    .
+  rm \
+    *".sig"
+  _pkgs=(
+    $( \
+      find \
+        . | \
+        grep \
+          "pkg")
+  )
+  _sigs=(
+    $( \
+      find \
+        . | \
+        grep \
+          "pkg")
+  )
+  _msg_info \
+    "moving ${_pkgs[*]}"
+  mv \
+    "${_pkgs[@]}" \
+    .
+  rm \
+    -rf \
+    "${_sigs[@]}"
+  _msg_info \
+    "installing $( \
+      basename \
+        "${_pkgs[*]}")"
+  "${_pkgmgr}" \
+    "${_pkgmgr_opts[@]}" \
+    $( \
+      find \
+        . | \
+        grep \
+          "pkg")
+  _pkgs=(
+    $(ls \
+        *".pkg."*)
+  )
+  _msg_info \
+    "installing ${_pkgs[*]}"
+  "${_pkgmgr}" \
+    "${_pkgmgr_opts[@]}" \
+    "${_pkgs[@]}"
+}
+
 # $@: packages
 _fur() {
   local \
@@ -80,73 +150,10 @@ _fur() {
       clone \
         "${_opts[@]}" \
         "${_url}"
-    _pkgs=(
-      $( \
-        find \
-          . \
-          -iname \
-	    '*.pkg.*' \
-	  -exec echo ${_repo}/{} ';')
-    )
-    _msg_info \
-      "found ${_pkgs[*]}"
-    _sigs=(
-      $( \
-        find \
-          . \
-          -iname \
-	    '*.sig' \
-	  -exec echo ${_repo}/{} ';')
-    )
-    _msg_info \
-      "removing signatures ${_sigs[*]}"
-    mv \
-      "${_sigs[@]}" \
-      .
-    rm \
-      *".sig"
-    _pkgs=(
-      $( \
-        find \
-          . | \
-	  grep \
-            "pkg")
-    )
-    _sigs=(
-      $( \
-        find \
-	  . | \
-	  grep \
-	    "pkg")
-    )
-    _msg_info \
-      "moving ${_pkgs[*]}"
-    mv \
-      "${_pkgs[@]}" \
-      .
-    rm \
-      -rf \
-      "${_sigs[@]}"
-    _msg_info \
-      "installing $( \
-        basename \
-          "${_pkgs[*]}")"
-    "${_pkgmgr}" \
-      "${_pkgmgr_opts[@]}" \
-      $( \
-        find \
-	  . | \
-	  grep \
-	    "pkg")
-    _pkgs=(
-      $(ls \
-	  *".pkg."*)
-    )
-    _msg_info \
-      "installing ${_pkgs[*]}"
-    "${_pkgmgr}" \
-      "${_pkgmgr_opts[@]}" \
-      "${_pkgs[@]}"
+    # hi if
+    if [[ "${_noinstall}" != "true" ]]; then
+      _install_pkgs
+    fi
   done
   cd \
     "${OLDPWD}"
