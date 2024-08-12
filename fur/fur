@@ -54,28 +54,33 @@ _install_pkgs() {
     "removing signatures ${_sigs[*]}"
   mv \
     "${_sigs[@]}" \
-    .
+    . || \
+    _msg_warning \
+      "error removing signatures ${_sigs[*]}"
   rm \
+    -rf \
     *".sig"
   _pkgs=(
     $( \
       find \
         . | \
         grep \
-          "pkg")
+          "pkg.tar.xz")
   )
   _sigs=(
     $( \
       find \
         . | \
         grep \
-          "pkg")
+          "pkg.tar.xz.sig")
   )
   _msg_info \
     "moving ${_pkgs[*]}"
   mv \
     "${_pkgs[@]}" \
-    .
+    . || \
+    _msg_warning \
+      "error removing ${_pkgs[*]}"
   rm \
     -rf \
     "${_sigs[@]}"
@@ -89,10 +94,10 @@ _install_pkgs() {
       find \
         . | \
         grep \
-          "pkg")
+          "pkg.tar.xz")
   _pkgs=(
     $(ls \
-        *".pkg."*)
+        *".pkg.tar.xz"*)
   )
   _msg_info \
     "installing ${_pkgs[*]}"
