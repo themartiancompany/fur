@@ -37,7 +37,7 @@ _install_pkgs() {
       find \
         . \
         -iname \
-          '*.pkg.*' \
+          '*.pkg.tar.xz*' \
         -exec echo ${_repo}/{} ';')
   )
   _msg_info \
@@ -47,43 +47,47 @@ _install_pkgs() {
       find \
         . \
         -iname \
-          '*.sig' \
+          '*.pkg.tar.xz.sig' \
         -exec echo ${_repo}/{} ';')
-  )
+  ) || \
+    true
   _msg_info \
     "removing signatures ${_sigs[*]}"
   mv \
     "${_sigs[@]}" \
     . || \
-    _msg_warning \
-      "error removing signatures ${_sigs[*]}"
+    true
   rm \
     -rf \
-    *".sig"
+    *".sig" || \
+    true
   _pkgs=(
     $( \
       find \
         . | \
         grep \
           "pkg.tar.xz")
-  )
+  ) || \
+    true
   _sigs=(
     $( \
       find \
         . | \
         grep \
           "pkg.tar.xz.sig")
-  )
+  ) || \
+    true
   _msg_info \
     "moving ${_pkgs[*]}"
   mv \
     "${_pkgs[@]}" \
     . || \
-    _msg_warning \
-      "error removing ${_pkgs[*]}"
+    _msg_info \
+      "error moving ${_pkgs[*]}"
   rm \
     -rf \
-    "${_sigs[@]}"
+    "${_sigs[@]}" || \
+    true
   _msg_info \
     "installing $( \
       basename \
