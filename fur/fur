@@ -78,7 +78,9 @@ _install_pkgs() {
     find \
       . \
       -iname \
-        "*.pkg.*")
+        "*.pkg.*" \
+      -maxdepth \
+        "1")
   ) || \
     true
   _msg_info \
