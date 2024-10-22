@@ -42,6 +42,26 @@ _install_pkgs() {
     _pwd
   _pwd="$( \
     pwd)"
+  _sigs=( $( \
+    find \
+      . \
+      -iwholename \
+        "*.pkg.*.sig" \
+      -exec \
+        echo \
+	  ${_repo}/{} ';')
+  ) || \
+    true
+  _msg_info \
+    "removing all signatures ${_sigs[*]}"
+  mv \
+    "${_sigs[@]}" \
+    . || \
+    true
+  rm \
+    -rf \
+    *".sig" || \
+    true
   _pkgs=( $( \
     find \
       . \
@@ -53,26 +73,6 @@ _install_pkgs() {
   )
   _msg_info \
     "found ${_pkgs[*]}"
-  _sigs=( $( \
-    find \
-      . \
-      -iwholename \
-        "*/${_platform}/*/*.pkg.*.sig" \
-      -exec \
-        echo \
-	  ${_repo}/{} ';')
-  ) || \
-    true
-  _msg_info \
-    "removing signatures ${_sigs[*]}"
-  mv \
-    "${_sigs[@]}" \
-    . || \
-    true
-  rm \
-    -rf \
-    *".sig" || \
-    true
   _pkgs=(
     $( \
       find \
@@ -81,13 +81,13 @@ _install_pkgs() {
           ".pkg.")
   ) || \
     true
-  _sigs=( $( \
-    find \
-      . \
-      -iwholename \
-        "*/${_platform}/*/*.pkg.*.sig")
-  ) || \
-    true
+  # _sigs=( $( \
+  #   find \
+  #     . \
+  #     -iwholename \
+  #       "*/${_platform}/*/*.pkg.*.sig")
+  # ) || \
+  #   true
   _msg_info \
     "moving ${_pkgs[*]}"
   mv \
@@ -95,10 +95,10 @@ _install_pkgs() {
     . || \
     _msg_info \
       "error moving ${_pkgs[*]}"
-  rm \
-    -rf \
-    "${_sigs[@]}" || \
-    true
+  # rm \
+  #   -rf \
+  #   "${_sigs[@]}" || \
+  #   true
   _pkgs=( $( \
     find \
       . | \
