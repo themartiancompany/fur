@@ -94,13 +94,13 @@ _install_pkgs() {
     -rf \
     "${_sigs[@]}" || \
     true
-  _pkgs=(
-    $( \
-      find \
-        . | \
-        grep \
-          ".pkg.")
-  )
+  _pkgs=( $( \
+    find \
+      . | \
+      grep \
+        ".pkg.")
+  ) || \
+    true
   _msg_info \
     "installing $( \
       basename \
