@@ -45,25 +45,22 @@ _install_pkgs() {
   _pkgs=( $( \
     find \
       . \
-      -iname \
-        "*.pkg.*" \
+      -iwholename \
+        "*/${_platform}/*/*.pkg.*" \
       -exec \
-        echo ${_repo}/{} ';' | \
-      grep \
-        "${_platform}/")
+        echo \
+	  ${_repo}/{} ';')
   )
   _msg_info \
     "found ${_pkgs[*]}"
   _sigs=( $( \
     find \
       . \
-      -iname \
-        '*.pkg.*.sig' \
+      -iwholename \
+        "*/${_platform}/*/*.pkg.*.sig" \
       -exec \
         echo \
-	  ${_repo}/{} ';' | \
-      grep \
-        "${_platform}/")
+	  ${_repo}/{} ';')
   ) || \
     true
   _msg_info \
@@ -84,14 +81,11 @@ _install_pkgs() {
           ".pkg.")
   ) || \
     true
-  _sigs=(
-    $( \
-      find \
-        . | \
-        grep \
-          ".pkg." | \
-	  grep \
-	    ".sig")
+  _sigs=( $( \
+    find \
+      . \
+      -iwholename \
+        "*/${_platform}/*/*.pkg.*.sig")
   ) || \
     true
   _msg_info \
