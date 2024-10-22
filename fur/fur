@@ -26,7 +26,10 @@ _global_variables() {
   package_manager=""
   installed_packages=()
   download_only=""
+  target_platform=""
+  target_arch=""
   repo_dir=""
+  target_mirror=""
   color=""
   quiet=""
 }
@@ -127,12 +130,23 @@ _install_pkgs() {
   fi
 }
 
+_mirror_get() {
+  local \
+    _domain="${1}"
+  _http="https://${_domain}.com"
+  _ns="themartiancompany"
+  _url="${_http}/${_ns}/fur"
+}
+
 # $@: packages
 _fur() {
   local \
-    _pkgmgr="${1}" \
-    _noinstall="${2}" \
-    _repo="${3}" \
+    _platform="${1}" \
+    _arch="${2}" \
+    _pkgmgr="${3}" \
+    _noinstall="${4}" \
+    _repo="${5}" \
+    _mirror="${6}" \
     _packages=() \
     _pkgs=() \
     _pkgmgr_opts=() \
@@ -143,13 +157,13 @@ _fur() {
     _pkg \
     _url
   shift \
-    3
+    6
   _packages=(
     "$@"
   )
-  _http="https://github.com"
-  _ns="themartiancompany"
-  _url="${_http}/${_ns}/fur"
+  _url="$( \
+    _mirror_get \
+      "${_mirror}")"
   _msg_info \
     "installing ${_packages[*]}"
   _pkgmgr_opts+=(
@@ -237,6 +251,21 @@ _get_pkgmgr_opts() {
     "${_opts[@]}"
 }
 
+_platform_auto_detect() {
+  local \
+    _platform="arch" \
+    _os
+  _os="$( \
+    uname \
+      -o)"
+  if [[ "${_os}" == "Android" ]] || \
+     [[ -v "TERMUX_VERSION" ]]; then
+    _platform="termux"
+  fi
+  echo \
+    "${_platform}"
+}
+
 # Set defaults and, if present, overrides
 # from fur command line option parameters
 _set_overrides() {
@@ -244,6 +273,15 @@ _set_overrides() {
     "install" \
     "date" \
     "$(_get_date_human)"
+  _set_override \
+    "target" \
+    "platform" \
+    "$(_platform_auto_detect)"
+  _set_override \
+    "target" \
+    "arch" \
+    "$(uname \
+         -m)"
   _set_override \
     "package" \
     "manager" \
@@ -260,6 +298,10 @@ _set_overrides() {
     "download" \
     "only" \
     "false"
+  _set_override \
+    "target" \
+    "mirror" \
+    "github"
   if [[ -v override_color ]]; then
     color="${override_color}"
   elif [[ -z "${color}" ]]; then
@@ -276,9 +318,13 @@ _set_overrides() {
 _show_config() {
   _msg_info "${app_name} configuration"
   _msg_info "             Install date:   $(_get "install" "date")"
+  _msg_info "          Target platform:   $(_get "target" "platform")"
+  _msg_info "      Target architecture:   $(_get "target" "arch")"
+  _msg_info "          Package manager:   $(_get "package" "manager")"
   _msg_info "          Package manager:   $(_get "package" "manager")"
   _msg_info "            Download only:   $(_get "download" "only")"
   _msg_info "           Repo directory:   $(_get "repo" "dir")"
+  _msg_info "            Target mirror:   $(_get "target" "mirror")"
   _msg_info " To be installed packages:   ${installed_packages[*]}"
 }
 
@@ -307,6 +353,17 @@ Usage:
                             To be set when download only is true,
 			    otherwise is temporary.
                             Default: $(_get "repo" "dir")
+     -P <platform>          Platform for which to retrieve packages,
+                            can be 'arch' or 'termux'.
+                            Default: $(_get "target" "platform")
+     -A <architecture>      Architecture for which to retrieve packages,
+                            can be 'any', 'arm' or 'x86_64'.
+                            Default: $(_get "target" "arch")
+     -m <mirror>            Fur mirror, can be 'github' or
+                            'gitlab'.
+                            Default: $(_get "target" "mirror")
+
+
      -c                     Colors.
      -h                     This message.
      -v                   Enable verbose output
@@ -329,9 +386,12 @@ while \
     arg; do
   case \
     "${arg}" in
+    P) override_target_platform="${OPTARG}" ;;
+    A) override_target_arch="${OPTARG}" ;;
     p) override_package_manager="${OPTARG}" ;;
     d) override_download_only="true" ;;
     w) override_repo_dir="${OPTARG}" ;;
+    m) override_target_mirror="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
     h|?) _set_overrides && \
@@ -363,6 +423,12 @@ _config_user_init \
 _show_config
 app_opts=(
   "$(_get \
+       "target" \
+       "platform")"
+  "$(_get \
+       "target" \
+       "arch")"
+  "$(_get \
        "package" \
        "manager")"
   "$(_get \
@@ -371,6 +437,9 @@ app_opts=(
   "$(_get \
        "repo" \
        "dir")"
+  "$(_get \
+       "target" \
+       "mirror")"
   "${installed_packages[@]}"
 )
 _fur \
