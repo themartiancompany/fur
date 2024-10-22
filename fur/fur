@@ -54,13 +54,9 @@ _install_pkgs() {
     true
   _msg_info \
     "removing all signatures ${_sigs[*]}"
-  mv \
-    "${_sigs[@]}" \
-    . || \
-    true
   rm \
     -rf \
-    *".sig" || \
+    *"${_sigs[@]}" || \
     true
   _pkgs=( $( \
     find \
@@ -72,46 +68,21 @@ _install_pkgs() {
 	  ${_repo}/{} ';')
   )
   _msg_info \
-    "found ${_pkgs[*]}"
-  _pkgs=(
-    $( \
-      find \
-        . | \
-        grep \
-          ".pkg.")
-  ) || \
-    true
-  # _sigs=( $( \
-  #   find \
-  #     . \
-  #     -iwholename \
-  #       "*/${_platform}/*/*.pkg.*.sig")
-  # ) || \
-  #   true
-  _msg_info \
-    "moving ${_pkgs[*]}"
+    "found and moving ${_pkgs[*]}"
   mv \
     "${_pkgs[@]}" \
     . || \
     _msg_info \
       "error moving ${_pkgs[*]}"
-  # rm \
-  #   -rf \
-  #   "${_sigs[@]}" || \
-  #   true
   _pkgs=( $( \
     find \
-      . | \
-      grep \
-        ".pkg.")
+      . \
+      -iname \
+        "*.pkg.*")
   ) || \
     true
   _msg_info \
     "installing ${_pkgs[*]}"
-  # _pkgs=(
-  #   $(ls \
-  #       *".pkg.tar.xz"*)
-  # )
   _cmd=(
     "${_pkgmgr}"
       "${_pkgmgr_opts[@]}"
