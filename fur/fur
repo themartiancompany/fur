@@ -35,14 +35,17 @@ _install_pkgs() {
   local \
     _pkgs=() \
     _sigs=() \
-    _cmd=()
-  _pkgs=(
-    $( \
-      find \
-        . \
-        -iname \
-          '*.pkg.*' \
-        -exec echo ${_repo}/{} ';')
+    _cmd=() \
+    _pwd
+  _pwd="$( \
+    pwd)"
+  _pkgs=( $( \
+    find \
+      . \
+      -iname \
+        '*.pkg.*' \
+      -exec \
+        echo ${_repo}/{} ';')
   )
   _msg_info \
     "found ${_pkgs[*]}"
@@ -52,7 +55,9 @@ _install_pkgs() {
         . \
         -iname \
           '*.pkg.*.sig' \
-        -exec echo ${_repo}/{} ';')
+        -exec \
+	  echo \
+	    ${_repo}/{} ';')
   ) || \
     true
   _msg_info \
@@ -113,8 +118,8 @@ _install_pkgs() {
       "${_pkgmgr_opts[@]}"
       "${_pkgs[@]}"
   )
-  # _msg_info \
-  #   "installing ${_pkgs[*]}"
+  _msg_info \
+    "running ${_cmd[*]}"
   if [[ "${quiet}" == "n" ]]; then
     "${_cmd[@]}"
   elif [[ "${quiet}" == "y" ]]; then
