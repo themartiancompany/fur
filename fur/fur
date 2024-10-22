@@ -135,10 +135,15 @@ _install_pkgs() {
 
 _mirror_get() {
   local \
-    _domain="${1}"
+    _domain="${1}" \
+    _http \
+    _ns \
+    _url
   _http="https://${_domain}.com"
   _ns="themartiancompany"
   _url="${_http}/${_ns}/fur"
+  echo \
+    "${_url}"
 }
 
 # $@: packages
@@ -155,8 +160,6 @@ _fur() {
     _pkgmgr_opts=() \
     _clone_opts=() \
     _git_opts=() \
-    _http \
-    _ns \
     _pkg \
     _url
   shift \
