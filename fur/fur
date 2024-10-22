@@ -77,10 +77,10 @@ _install_pkgs() {
   _pkgs=( $( \
     find \
       . \
-      -iname \
-        "*.pkg.*" \
       -maxdepth \
-        "1")
+        "1" \
+      -iname \
+        "*.pkg.*")
   ) || \
     true
   _msg_info \
