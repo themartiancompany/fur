@@ -56,7 +56,7 @@ _install_pkgs() {
     "removing all signatures ${_sigs[*]}"
   rm \
     -rf \
-    *"${_sigs[@]}" || \
+    "${_sigs[@]}" || \
     true
   _pkgs=( $( \
     find \
