@@ -32,12 +32,16 @@ _global_variables() {
 }
 
 _install_pkgs() {
+  local \
+    _pkgs=() \
+    _sigs=() \
+    _cmd=()
   _pkgs=(
     $( \
       find \
         . \
         -iname \
-          '*.pkg.tar.xz*' \
+          '*.pkg.*' \
         -exec echo ${_repo}/{} ';')
   )
   _msg_info \
@@ -47,7 +51,7 @@ _install_pkgs() {
       find \
         . \
         -iname \
-          '*.pkg.tar.xz.sig' \
+          '*.pkg.*.sig' \
         -exec echo ${_repo}/{} ';')
   ) || \
     true
@@ -66,7 +70,7 @@ _install_pkgs() {
       find \
         . | \
         grep \
-          "pkg.tar.xz")
+          ".pkg.")
   ) || \
     true
   _sigs=(
@@ -74,7 +78,9 @@ _install_pkgs() {
       find \
         . | \
         grep \
-          "pkg.tar.xz.sig")
+          ".pkg." | \
+	  grep \
+	    ".sig")
   ) || \
     true
   _msg_info \
@@ -88,26 +94,34 @@ _install_pkgs() {
     -rf \
     "${_sigs[@]}" || \
     true
-  _msg_info \
-    "installing $( \
-      basename \
-        "${_pkgs[*]}")"
-  "${_pkgmgr}" \
-    "${_pkgmgr_opts[@]}" \
+  _pkgs=(
     $( \
       find \
         . | \
         grep \
-          "pkg.tar.xz")
-  _pkgs=(
-    $(ls \
-        *".pkg.tar.xz"*)
+          ".pkg.")
   )
   _msg_info \
-    "installing ${_pkgs[*]}"
-  "${_pkgmgr}" \
-    "${_pkgmgr_opts[@]}" \
-    "${_pkgs[@]}"
+    "installing $( \
+      basename \
+        "${_pkgs[*]}")"
+  # _pkgs=(
+  #   $(ls \
+  #       *".pkg.tar.xz"*)
+  # )
+  _cmd=(
+    "${_pkgmgr}" \
+      "${_pkgmgr_opts[@]}" \
+      "${_pkgs[@]}"
+  )
+  # _msg_info \
+  #   "installing ${_pkgs[*]}"
+  if [[ "${quiet}" == "n" ]]; then
+    "${_cmd[@]}"
+  elif [[ "${quiet}" == "y" ]]; then
+    "${_cmd[@]}" 2 &> \
+      /dev/null
+  fi
 }
 
 # $@: packages
@@ -209,11 +223,6 @@ _get_pkgmgr_opts() {
   if [[ "${_name}" == "inteppacman" ]]; then
     _opts+=(
       --
-    )
-  fi
-  if [[ "${quiet}" == "y" ]]; then
-    _opts+=(
-      --quiet
     )
   fi
   _opts+=(
