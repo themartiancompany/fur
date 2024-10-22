@@ -107,8 +107,7 @@ _install_pkgs() {
   ) || \
     true
   _msg_info \
-    "installing $( \
-      "${_pkgs[*]}")"
+    "installing ${_pkgs[*]}"
   # _pkgs=(
   #   $(ls \
   #       *".pkg.tar.xz"*)
