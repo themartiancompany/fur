@@ -119,6 +119,7 @@ _fur() {
     _packages=() \
     _pkgs=() \
     _pkgmgr_opts=() \
+    _clone_opts=() \
     _git_opts=() \
     _http \
     _ns \
@@ -138,7 +139,12 @@ _fur() {
     $(_get_pkgmgr_opts \
         "${_pkgmgr}")
   )
-  _git_opts=(
+  if [[ "${quiet}" == "y" ]]; then
+    _clone_opts+=(
+      --quiet
+    )
+  fi
+  _clone_opts+=(
     --single-branch
     --depth=1
   )
@@ -149,15 +155,15 @@ _fur() {
         mktemp \
           -d)"
     fi
-    _opts=(
-      "${_git_opts[@]}"
+    _git_opts+=(
+      "${_clone_opts[@]}"
       --branch="${_pkg}"
     )
     cd \
       "${_repo}"
     git \
       clone \
-        "${_opts[@]}" \
+        "${_git_opts[@]}" \
         "${_url}"
     # hi if
     if [[ "${_noinstall}" != "true" ]]; then
