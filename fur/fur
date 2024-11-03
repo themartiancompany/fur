@@ -244,6 +244,8 @@ _platform_auto_detect() {
 # Set defaults and, if present, overrides
 # from fur command line option parameters
 _set_overrides() {
+  local \
+    _msg=()
   _set_override \
     "install" \
     "date" \
@@ -286,6 +288,19 @@ _set_overrides() {
     quiet="${override_quiet}"
   elif [[ -z "${quiet}" ]]; then
     quiet="y"
+  fi
+  if [[ "${installed_packages[*]}" == "" ]]; then
+    installed_packages+=(
+      "$(basename \
+        "$(realpath \
+          "$(pwd)")")"
+    )
+    _msg=(
+      "No input package given,"
+      "publishing ${local_packages[*]}"
+    )
+    _msg_info \
+      "${_msg[*]}"
   fi
 }
 
@@ -382,13 +397,6 @@ while \
     ;;
   esac
 done
-shift \
-  $(( \
-    OPTIND - 1 \
-  ))
-(( $# < 1 )) && \
-  _usage \
-    1
 installed_packages=(
   $@
 )
