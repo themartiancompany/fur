@@ -397,6 +397,10 @@ while \
     ;;
   esac
 done
+shift \
+  $(( \
+    OPTIND - 1 \
+  ))
 installed_packages=(
   $@
 )
