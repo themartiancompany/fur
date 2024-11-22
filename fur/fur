@@ -262,7 +262,7 @@ _set_overrides() {
   _set_override \
     "package" \
     "manager" \
-    "pacman"
+    "inteppacman"
     # TODO:
     # produce a working pacman which can be
     # run as root (see pacman-root-ur tmc repo)
