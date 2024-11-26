@@ -80,7 +80,10 @@ _install_pkgs() {
       -maxdepth \
         "1" \
       -iname \
-        "*.pkg.*")
+        "*.pkg.*" \
+      -exec \
+        realpath \
+        {} \;)
   ) || \
     true
   _msg_info \
