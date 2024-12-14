@@ -34,24 +34,35 @@ _global_variables() {
   quiet=""
 }
 
+_sigs_get() {
+  mapfile \
+    -d \
+    $'\0' \
+    _sigs < \
+    <(find \
+        . \
+	-iwholename \
+          "*.pkg.*.sig" \
+	-type \
+	  "f"
+        -exec \
+          "echo" \
+	   "${_repo}/{}" ';' \
+	-print0 || \
+      true)
+}
+
 _install_pkgs() {
   local \
     _pkgs=() \
     _sigs=() \
+    _sig \
     _cmd=() \
     _pwd
   _pwd="$( \
     pwd)"
-  _sigs=( $( \
-    find \
-      . \
-      -iwholename \
-        "*.pkg.*.sig" \
-      -exec \
-        echo \
-	  ${_repo}/{} ';')
-  ) || \
-    true
+  _sigs_get
+  for _sig in
   _msg_info \
     "removing all signatures ${_sigs[*]}"
   rm \
