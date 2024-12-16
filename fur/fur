@@ -44,7 +44,7 @@ _sigs_get() {
 	-iwholename \
           "*.pkg.*.sig" \
 	-type \
-	  "f"
+	  "f" \
         -exec \
           "echo" \
 	   "${_repo}/{}" ';' \
