@@ -34,21 +34,33 @@ _global_variables() {
   quiet=""
 }
 
+_pkgs_get() {
+  mapfile \
+    -d \
+    $'\0' \
+    _pkgs < \
+    <(find \
+        "${_repo}" \
+	-iwholename \
+          "*/${_platform}/*/*.pkg.*" \
+        -type \
+          "f" \
+        -print0 || \
+      true)
+}
+
 _sigs_get() {
   mapfile \
     -d \
     $'\0' \
     _sigs < \
     <(find \
-        . \
+        "${_repo}" \
 	-iwholename \
           "*.pkg.*.sig" \
-	-type \
-	  "f" \
-        -exec \
-          "echo" \
-	   "${_repo}/{}" ';' \
-	-print0 || \
+        -type \
+          "f" \
+        -print0 || \
       true)
 }
 
@@ -68,15 +80,7 @@ _install_pkgs() {
     -rf \
     "${_sigs[@]}" || \
     true
-  _pkgs=( $( \
-    find \
-      . \
-      -iwholename \
-        "*/${_platform}/*/*.pkg.*" \
-      -exec \
-        echo \
-	  ${_repo}/{} ';')
-  )
+  _pkgs_get
   _msg_info \
     "found and moving ${_pkgs[*]}"
   mv \
@@ -93,7 +97,7 @@ _install_pkgs() {
         "*.pkg.*" \
       -exec \
         realpath \
-        {} \;)
+          {} \;)
   ) || \
     true
   _msg_info \
