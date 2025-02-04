@@ -62,7 +62,6 @@ _install_pkgs() {
   _pwd="$( \
     pwd)"
   _sigs_get
-  for _sig in
   _msg_info \
     "removing all signatures ${_sigs[*]}"
   rm \
