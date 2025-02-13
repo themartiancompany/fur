@@ -1,6 +1,6 @@
 # Fur
 
-The fur, acronym of "Fallback
+The fur, acronym for "Fallback
 [User Repository](
   ../ur)",
 is an helper program for the Ur which
