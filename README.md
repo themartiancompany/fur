@@ -1,10 +1,10 @@
 # Fur
 
-The fur, acronym for "Fallback
-[User Repository](
-  ../ur)",
-is an helper program for the Ur uncensorable,
-unstoppable user repository and application store which
+The fur, acronym for "Fallback User Repository",
+is an helper program for the uncensorable, unstoppable
+[Ur](
+  ../ur)
+user repository and application store which
 retrieves and installs binary packages from
 censorable sources, like Github.
 
