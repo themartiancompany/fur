@@ -14,6 +14,16 @@ as well, given the Ur is the DogeOS application store.
 I suppose nobody should explain how a fur relates
 to a Doge, no?
 
+## How does it work
+
+Each branch on this repository represents a software
+package. Packages are currently provided for the desktop
+and mobile Life and DogeOS bases.
+
+If you want a binary package for a new software to
+be added to the fur, feel free to open a request
+in the issues section.
+
 ## Installation
 
 To install and run the program using the ur just run
