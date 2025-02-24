@@ -60,7 +60,7 @@ _pkgs_get() {
     _pkgs < \
     <(find \
         "${_repo}" \
-	-iwholename \
+        -iwholename \
           "*/${_platform}/*/*.pkg.*" \
         -type \
           "f" \
@@ -75,8 +75,11 @@ _sigs_get() {
     _sigs < \
     <(find \
         "${_repo}" \
-	-iwholename \
+        -iwholename \
           "*.pkg.*.sig" \
+        -o \
+        -iwholename \
+          "*.pkg.*.asc" \
         -type \
           "f" \
         -print0 || \
