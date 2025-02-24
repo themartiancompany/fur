@@ -75,11 +75,13 @@ _sigs_get() {
     _sigs < \
     <(find \
         "${_repo}" \
-        -iwholename \
-          "*.pkg.*.sig" \
-        -o \
-        -iwholename \
-          "*.pkg.*.asc" \
+	\( \
+          -iwholename \
+            "*.pkg.*.sig" \
+          -o \
+          -iwholename \
+            "*.pkg.*.asc" \
+	\) \
         -type \
           "f" \
         -print0 || \
