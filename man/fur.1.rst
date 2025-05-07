@@ -76,6 +76,7 @@ Options
                         can be 'any', 'arm' or 'x86_64'.
 -m mirror               Fur mirror, can be 'github' or
                         'gitlab'.
+-o output_dir           Output directory for the packages.
 
 -h                      Display help.
 -c                      Enable color output

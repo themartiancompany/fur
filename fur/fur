@@ -48,7 +48,9 @@ _global_variables() {
   target_platform=""
   target_arch=""
   repo_dir=""
+  sig_dir=""
   target_mirror=""
+  output_dir=""
   color=""
   quiet=""
 }
@@ -126,13 +128,17 @@ _install_pkgs() {
       -maxdepth \
         "1" \
       -iname \
-        "*.pkg.*" \
+        "*.pkg.tar*" \
       -exec \
         realpath \
-          {} \;)
+          '{}' \;)
   ) || \
-    true
+  true
+  _msg=(
+    "Installing ${_pkgs[*]}."
+  )
   _msg_info \
+    "${_msg[*]}"
     "Installing ${_pkgs[*]}."
   _cmd=(
     "${_pkgmgr}"
@@ -162,6 +168,45 @@ _http_mirror_get() {
     "${_url}"
 }
 
+_fur_git_get() {
+  local \
+    _pkg="${1}" \
+    _url="${2}" \
+    _dir="${3}" \
+    _git_opts=() \
+    _clone_opts=() \
+    _oldpwd \
+    _msg=()
+  if [[ "${quiet}" == "y" ]]; then
+    _clone_opts+=(
+      --quiet
+    )
+  fi
+  _msg_info \
+    "${_msg[*]}"
+  _msg=(
+    "Downloading ${_pkg}."
+  )
+  _clone_opts+=(
+    --single-branch
+    --depth=1
+  )
+  _git_opts+=(
+    "${_clone_opts[@]}"
+    --branch="${_pkg}"
+  )
+  _oldpwd="$( \
+    pwd)"
+  cd \
+    "${_repo}"
+  git \
+    clone \
+      "${_git_opts[@]}" \
+      "${_url}"
+  cd \
+    "${_oldpwd}"
+}
+
 # $@: packages
 _fur() {
   local \
@@ -170,7 +215,9 @@ _fur() {
     _pkgmgr="${3}" \
     _noinstall="${4}" \
     _repo="${5}" \
-    _mirror="${6}" \
+    _sig_dir="${6}" \
+    _mirror="${7}" \
+    _output_dir="${8}" \
     _packages=() \
     _pkgs=() \
     _pkgmgr_opts=() \
@@ -180,7 +227,7 @@ _fur() {
     _url \
     _msg=()
   shift \
-    6
+    7
   _packages=(
     "$@"
   )
@@ -196,15 +243,6 @@ _fur() {
     $(_get_pkgmgr_opts \
         "${_pkgmgr}")
   )
-  if [[ "${quiet}" == "y" ]]; then
-    _clone_opts+=(
-      --quiet
-    )
-  fi
-  _clone_opts+=(
-    --single-branch
-    --depth=1
-  )
   for _pkg \
     in "${_packages[@]}"; do
     if [[ "${_noinstall}" == "false" ]]; then
@@ -212,20 +250,11 @@ _fur() {
         mktemp \
           -d)"
     fi
-    _git_opts+=(
-      "${_clone_opts[@]}"
-      --branch="${_pkg}"
-    )
-    cd \
+    _fur_git_get \
+      "${_pkg}" \
+      "${_url}" \
       "${_repo}"
-    _msg_info \
-      "Cloning from ${_url}."
-    git \
-      clone \
-        "${_git_opts[@]}" \
-        "${_url}"
-    # hi if
-    if [[ "${_noinstall}" != "true" ]]; then
+    if [[ "${_noinstall}" == "false" ]]; then
       _install_pkgs
     fi
   done
@@ -294,6 +323,19 @@ _platform_auto_detect() {
     "${_platform}"
 }
 
+_output_dir_auto_detect() {
+  local \
+    _output_dir
+  _output_dir="${HOME}/.cache/fur/packages"
+  mkdir \
+    -p \
+    "${_output_dir}"
+  _set_override \
+    "output" \
+    "dir" \
+    "${_output_dir}"
+}
+
 # Set defaults and, if present, overrides
 # from fur command line option parameters
 _set_overrides() {
@@ -332,6 +374,7 @@ _set_overrides() {
     "target" \
     "mirror" \
     "github"
+  _output_dir_auto_detect
   if [[ -v override_color ]]; then
     color="${override_color}"
   elif [[ -z "${color}" ]]; then
@@ -367,7 +410,9 @@ _show_config() {
   _msg_info "          Package manager:   ${package_manager}"
   _msg_info "            Download only:   ${download_only}"
   _msg_info "           Repo directory:   ${repo_dir}"
+  _msg_info "     Signatures directory:   ${sig_dir}"
   _msg_info "            Target mirror:   ${target_mirror}"
+  _msg_info "         Output directory:   ${output_dir}"
   _msg_info " To be installed packages:   ${installed_packages[*]}"
 }
 
@@ -382,11 +427,14 @@ _usage() {
       -d '' \
       _usage_text << \
         ENDUSAGETEXT || true
+Fallback User Repository.
 
 Usage:
+
   ${app_name}
     [options]
     [packages]
+
   options:
      -p <package_manager>   Package manager.
                             Default: ${package_manager}
@@ -394,7 +442,7 @@ Usage:
                             Default: ${download_only}
      -w <repo_dir>          Directory containing the fur tree.
                             To be set when download only is true,
-			    otherwise is temporary.
+                            otherwise is temporary.
                             Default: ${repo_dir}
      -P <platform>          Platform for which to retrieve packages,
                             can be 'arch' or 'termux'.
@@ -405,11 +453,14 @@ Usage:
      -m <mirror>            Fur mirror, can be 'github' or
                             'gitlab'.
                             Default: ${target_mirror}
-
+     -K <sig_dir>           Signatures keys directory.
+                            Default: ${sig_dir}
+     -o <output_dir>        Output directory.
+                            Default: ${output_dir}
 
      -c                     Colors.
      -h                     This message.
-     -v                   Enable verbose output
+     -v                     Enable verbose output
 ENDUSAGETEXT
   _printf \
     '%s\n' \
@@ -425,7 +476,7 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'P:A:p:dw:m:cvh?' \
+    'P:A:p:dw:K:m:o:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -434,7 +485,9 @@ while \
     p) override_package_manager="${OPTARG}" ;;
     d) override_download_only="true" ;;
     w) override_repo_dir="${OPTARG}" ;;
+    K) override_sig_dir="${OPTARG}" ;;
     m) override_target_mirror="${OPTARG}" ;;
+    o) override_output_dir="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
     h|?) _set_overrides && \
@@ -442,7 +495,7 @@ while \
            0 ;;
     *)
     _msg_error \
-      "Invalid argument '${arg}'" \
+      "Invalid argument '${arg}'." \
       0 && \
     _set_overrides && \
     _usage \
@@ -467,7 +520,9 @@ app_opts=(
   "${package_manager}"
   "${download_only}"
   "${repo_dir}"
+  "${sig_dir}"
   "${target_mirror}"
+  "${output_dir}"
   "${installed_packages[@]}"
 )
 _fur \
