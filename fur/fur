@@ -104,6 +104,11 @@ _install_pkgs() {
   _sig_verify="false"
   _pwd="$( \
     pwd)"
+  _msg=(
+    "Installing downloaded packages."
+  )
+  _msg_info \
+    "${_msg[*]}"
   _sigs_get
   if [[ "${_sigs[*]}" == "" ]]; then
     _msg=(
@@ -115,7 +120,8 @@ _install_pkgs() {
   fi
   if [[ "${_sig_verify}" == "false" ]]; then
     _msg=(
-      "Removing all signatures '${_sigs[*]}'."
+      "Signature verification disabled,"
+      "removing all signatures '${_sigs[*]}'."
     )
     _msg_info \
       "${_msg[*]}"
@@ -124,25 +130,25 @@ _install_pkgs() {
       "${_sigs[@]}" || \
       true
   fi 
-  _pkgs_get
-  if [[ "${_pkgs[*]}" == "" ]]; then
-    _msg=(
-      "Found no packages."
-    )
-    _msg_error \
-      "${_msg[*]}" \
-      1
-  fi
-  _msg=(
-    "Found and moving packages '${_pkgs[*]}'."
-  )
-  _msg_info \
-    "${_msg[*]}"
-  mv \
-    "${_pkgs[@]}" \
-    . || \
-    _msg_info \
-      "Error moving ${_pkgs[*]}."
+  # _pkgs_get
+  # if [[ "${_pkgs[*]}" == "" ]]; then
+  #   _msg=(
+  #     "Found no packages."
+  #   )
+  #   _msg_error \
+  #     "${_msg[*]}" \
+  #     1
+  # fi
+  # _msg=(
+  #   "Found and moving packages '${_pkgs[*]}'."
+  # )
+  # _msg_info \
+  #   "${_msg[*]}"
+  # mv \
+  #   "${_pkgs[@]}" \
+  #   . || \
+  #   _msg_info \
+  #     "Error moving ${_pkgs[*]}."
   _pkgs=( $( \
     find \
       . \
