@@ -160,7 +160,6 @@ _install_pkgs() {
   )
   _msg_info \
     "${_msg[*]}"
-    "Installing ${_pkgs[*]}."
   _cmd=(
     "${_pkgmgr}"
       "${_pkgmgr_opts[@]}"
