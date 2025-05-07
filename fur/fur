@@ -188,6 +188,15 @@ _http_mirror_get() {
     "${_url}"
 }
 
+_file_hash() {
+  local \
+    _file="${1}"
+  sha256sum \
+    "${_file}" | \
+    awk \
+      '{print $1}'
+}
+
 _fur_git_get() {
   local \
     _pkg="${1}" \
