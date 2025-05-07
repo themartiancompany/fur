@@ -76,7 +76,7 @@ _sigs_get() {
     $'\0' \
     _sigs < \
     <(find \
-        "${_repo}" \
+        "${_repo_dir}" \
 	\( \
           -iwholename \
             "*.pkg.*.sig" \
