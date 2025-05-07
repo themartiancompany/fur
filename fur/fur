@@ -61,7 +61,7 @@ _pkgs_get() {
     $'\0' \
     _pkgs < \
     <(find \
-        "${_repo}" \
+        "${_repo_dir}" \
         -iwholename \
           "*/${_platform}/*/*.pkg.*" \
         -type \
@@ -184,10 +184,11 @@ _http_mirror_get() {
 _fur_git_get() {
   local \
     _pkg="${1}" \
-    _url="${2}" \
-    _dir="${3}" \
+    _mirror="${2}" \
+    _repo_dir="${3}" \
     _git_opts=() \
     _clone_opts=() \
+    _pkgs=() \
     _oldpwd \
     _msg=()
   if [[ "${quiet}" == "y" ]]; then
@@ -208,14 +209,38 @@ _fur_git_get() {
     "${_clone_opts[@]}"
     --branch="${_pkg}"
   )
+  _url="$( \
+    _http_mirror_get \
+      "${_mirror}")"
   _oldpwd="$( \
     pwd)"
   cd \
-    "${_repo}"
+    "${_repo_dir}"
   git \
     clone \
       "${_git_opts[@]}" \
       "${_url}"
+  _pkgs_get
+  if [[ "${_pkgs[*]}" == "" ]]; then
+    _msg=(
+      "Found no packages."
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      1
+  fi
+  _msg=(
+    "Found and moving packages '${_pkgs[*]}'"
+    "into '${_repo_dir}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  mv \
+    "${_pkgs[@]}" \
+    . || \
+  _msg_error \
+    "Error moving ${_pkgs[*]}." \
+    1
   cd \
     "${_oldpwd}"
 }
@@ -249,9 +274,6 @@ _fur() {
   )
   _msg_info \
     "${_msg[*]}"
-  _url="$( \
-    _http_mirror_get \
-      "${_mirror}")"
   _pkgmgr_opts+=(
     $(_get_pkgmgr_opts \
         "${_pkgmgr}")
@@ -265,8 +287,8 @@ _fur() {
     fi
     _fur_git_get \
       "${_pkg}" \
-      "${_url}" \
-      "${_repo}"
+      "${_mirror}" \
+      "${_repo_dir}"
     if [[ "${_noinstall}" == "false" ]]; then
       _install_pkgs \
         "${_repo_dir}" \
