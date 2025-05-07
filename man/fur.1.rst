@@ -70,6 +70,7 @@ Options
 -w repo_dir             Directory containing the fur tree.
                         To be set when download only is true,
                         otherwise is temporary.
+-K sig_dir              Signatures directory.
 -P platform             Platform for which to retrieve packages,
                         can be 'arch' or 'termux'.
 -A architecture         Architecture for which to retrieve packages,
