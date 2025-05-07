@@ -223,6 +223,18 @@ _fur_git_get() {
     pwd)"
   cd \
     "${_repo_dir}"
+  if [[ -e "fur" ]]; then
+    _msg=(
+      "fur directory exists"
+      "already in '${_repo_dir}',"
+      "deleting."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    rm \
+      -rf \
+      "fur"
+  fi
   git \
     clone \
       "${_git_opts[@]}" \
