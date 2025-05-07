@@ -590,7 +590,7 @@ shift \
     OPTIND - 1 \
   ))
 installed_packages=(
-  $@
+  "$@"
 )
 _set_overrides
 _config_user_init \
