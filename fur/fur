@@ -92,6 +92,8 @@ _sigs_get() {
 
 _install_pkgs() {
   local \
+    _repo_dir="${1}" \
+    _sig_dir="${2}" \
     _pkgs=() \
     _sigs=() \
     _sig \
@@ -115,8 +117,19 @@ _install_pkgs() {
       true
   fi 
   _pkgs_get
-  _msg_info \
+  if [[ "${_pkgs[*]}" == "" ]]; then
+    _msg=(
+      "Found no packages."
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      1
+  fi
+  _msg=(
     "Found and moving packages '${_pkgs[*]}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
   mv \
     "${_pkgs[@]}" \
     . || \
@@ -214,7 +227,7 @@ _fur() {
     _arch="${2}" \
     _pkgmgr="${3}" \
     _noinstall="${4}" \
-    _repo="${5}" \
+    _repo_dir="${5}" \
     _sig_dir="${6}" \
     _mirror="${7}" \
     _output_dir="${8}" \
@@ -231,14 +244,14 @@ _fur() {
   _packages=(
     "$@"
   )
-  _url="$( \
-    _http_mirror_get \
-      "${_mirror}")"
   _msg=(
     "Installing ${_packages[*]}."
   )
   _msg_info \
     "${_msg[*]}"
+  _url="$( \
+    _http_mirror_get \
+      "${_mirror}")"
   _pkgmgr_opts+=(
     $(_get_pkgmgr_opts \
         "${_pkgmgr}")
@@ -246,7 +259,7 @@ _fur() {
   for _pkg \
     in "${_packages[@]}"; do
     if [[ "${_noinstall}" == "false" ]]; then
-      _repo="$( \
+      _repo_dir="$( \
         mktemp \
           -d)"
     fi
@@ -255,7 +268,9 @@ _fur() {
       "${_url}" \
       "${_repo}"
     if [[ "${_noinstall}" == "false" ]]; then
-      _install_pkgs
+      _install_pkgs \
+        "${_repo_dir}" \
+        "${_sig_dir}"
     fi
   done
   cd \
@@ -339,6 +354,21 @@ _output_dir_auto_detect() {
     "${_output_dir}"
 }
 
+_repo_dir_auto_detect() {
+  local \
+    _repo_dir
+  _repo_dir="${HOME}/.cache/fur/packages"
+  if [[ -e "${_repo_dir}" ]]; then
+    mkdir \
+      -p \
+      "${_repo_dir}"
+  fi
+  _set_override \
+    "repo" \
+    "dir" \
+    "${_repo_dir}"
+}
+
 # Set defaults and, if present, overrides
 # from fur command line option parameters
 _set_overrides() {
@@ -362,10 +392,7 @@ _set_overrides() {
     # produce a working pacman which can be
     # run as root (see pacman-root-ur tmc repo)
     # "$(_get_package_manager)"
-  _set_override \
-    "repo" \
-    "dir" \
-    "${HOME}"
+  _repo_dir_auto_detect
   _set_override \
     "download" \
     "only" \
