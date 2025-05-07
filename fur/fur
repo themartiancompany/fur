@@ -311,6 +311,9 @@ _fur_git_get() {
   done
   cd \
     "${_oldpwd}"
+  rm \
+    -rf \
+    "${_repo_dir}/fur"
 }
 
 # $@: packages
