@@ -227,7 +227,7 @@ _fur() {
     _url \
     _msg=()
   shift \
-    7
+    8
   _packages=(
     "$@"
   )
@@ -310,8 +310,9 @@ _get_pkgmgr_opts() {
 
 _platform_auto_detect() {
   local \
-    _platform="arch" \
+    _platform \
     _os
+  _platform="arch"
   _os="$( \
     uname \
       -o)"
@@ -319,7 +320,9 @@ _platform_auto_detect() {
      [[ -v "TERMUX_VERSION" ]]; then
     _platform="termux"
   fi
-  echo \
+  _set_override \
+    "target" \
+    "platform" \
     "${_platform}"
 }
 
@@ -345,10 +348,7 @@ _set_overrides() {
     "install" \
     "date" \
     "$(_get_date_human)"
-  _set_override \
-    "target" \
-    "platform" \
-    "$(_platform_auto_detect)"
+  _platform_auto_detect
   _set_override \
     "target" \
     "arch" \
@@ -444,6 +444,8 @@ Usage:
                             To be set when download only is true,
                             otherwise is temporary.
                             Default: ${repo_dir}
+     -K <sig_dir>           Signatures keys directory.
+                            Default: ${sig_dir}
      -P <platform>          Platform for which to retrieve packages,
                             can be 'arch' or 'termux'.
                             Default: ${target_platform}
@@ -453,8 +455,6 @@ Usage:
      -m <mirror>            Fur mirror, can be 'github' or
                             'gitlab'.
                             Default: ${target_mirror}
-     -K <sig_dir>           Signatures keys directory.
-                            Default: ${sig_dir}
      -o <output_dir>        Output directory.
                             Default: ${output_dir}
 
