@@ -485,6 +485,16 @@ _repo_dir_auto_detect() {
 _set_overrides() {
   local \
     _msg=()
+  if [[ -v override_color ]]; then
+    color="${override_color}"
+  elif [[ -z "${color}" ]]; then
+    color="n"
+  fi
+  if [[ -v override_quiet ]]; then
+    quiet="${override_quiet}"
+  elif [[ -z "${quiet}" ]]; then
+    quiet="y"
+  fi
   _set_override \
     "install" \
     "date" \
@@ -513,16 +523,6 @@ _set_overrides() {
     "mirror" \
     "github"
   _output_dir_auto_detect
-  if [[ -v override_color ]]; then
-    color="${override_color}"
-  elif [[ -z "${color}" ]]; then
-    color="n"
-  fi
-  if [[ -v override_quiet ]]; then
-    quiet="${override_quiet}"
-  elif [[ -z "${quiet}" ]]; then
-    quiet="y"
-  fi
   if [[ "${installed_packages[*]}" == "" ]]; then
     installed_packages+=(
       "$(basename \
@@ -629,7 +629,7 @@ while \
     c) override_color="y" ;;
     v) override_quiet="n" ;;
     h|?) _set_overrides && \
-	 _usage \
+         _usage \
            0 ;;
     *)
     _msg_error \
