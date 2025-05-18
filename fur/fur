@@ -480,6 +480,22 @@ _repo_dir_auto_detect() {
     "${_repo_dir}"
 }
 
+_pkg_manager_auto_detect() {
+  local \
+    _pkg_manager
+  _pkg_manager="$( \
+    command \
+      -v \
+      "inteppacman")"
+  if [[ "${_pkg_manager}" == "" ]]; then
+    _pkg_manager="pacman"
+  fi
+  _set_override \
+    "package" \
+    "manager" \
+    "${_pkg_manager}"
+}
+
 # Set defaults and, if present, overrides
 # from fur command line option parameters
 _set_overrides() {
@@ -505,6 +521,7 @@ _set_overrides() {
     "arch" \
     "$(uname \
          -m)"
+  _pkg_manager_auto_detect
   _set_override \
     "package" \
     "manager" \
