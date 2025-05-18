@@ -388,30 +388,6 @@ _fur() {
     "${OLDPWD}"
 }
 
-_get_package_manager() {
-  local \
-    _fallback_name="pacman" \
-    _name \
-    _pkgmgr
-  _name="intep${_fallback_name}"
-  _pkgmgr="$( \
-    command \
-      -v \
-      "${_name}")"
-  if [[ "${_pkgmgr}" == "" ]]; then
-    _pkgmgr="$( \
-      command \
-        -v \
-        "${_fallback_name}")"
-  fi
-  if [[ "${_pkgmgr}" == "" ]]; then
-    _msg_error \
-      "install either ${_name} or ${_fallback_name}"
-  fi
-  echo \
-    "${_pkgmgr}"
-}
-
 _get_pkgmgr_opts() {
   local \
     _pkgmgr="${1}" \
@@ -480,20 +456,20 @@ _repo_dir_auto_detect() {
     "${_repo_dir}"
 }
 
-_pkg_manager_auto_detect() {
+_package_manager_auto_detect() {
   local \
-    _pkg_manager
-  _pkg_manager="$( \
+    _package_manager
+  _package_manager="$( \
     command \
       -v \
       "inteppacman")"
-  if [[ "${_pkg_manager}" == "" ]]; then
-    _pkg_manager="pacman"
+  if [[ "${_package_manager}" == "" ]]; then
+    _package_manager="pacman"
   fi
   _set_override \
     "package" \
     "manager" \
-    "${_pkg_manager}"
+    "${_package_manager}"
 }
 
 # Set defaults and, if present, overrides
@@ -521,15 +497,10 @@ _set_overrides() {
     "arch" \
     "$(uname \
          -m)"
-  _pkg_manager_auto_detect
-  _set_override \
-    "package" \
-    "manager" \
-    "inteppacman"
-    # TODO:
-    # produce a working pacman which can be
-    # run as root (see pacman-root-ur tmc repo)
-    # "$(_get_package_manager)"
+  _package_manager_auto_detect
+  # TODO:
+  # produce a working pacman which can be
+  # run as root (see pacman-root-ur tmc repo)
   _repo_dir_auto_detect
   _set_override \
     "download" \
