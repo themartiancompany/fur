@@ -43,6 +43,7 @@ _requirements() {
 _global_variables() {
   install_date=""
   package_manager=""
+  dependencies_check=""
   installed_packages=()
   download_only=""
   target_platform=""
@@ -50,6 +51,7 @@ _global_variables() {
   repo_dir=""
   sig_dir=""
   target_mirror=""
+  mirror_type=""
   output_dir=""
   color=""
   quiet=""
@@ -510,6 +512,14 @@ _set_overrides() {
     "target" \
     "mirror" \
     "github"
+  _set_override \
+    "mirror" \
+    "type" \
+    "tree"
+  _set_override \
+    "dependencies" \
+    "check" \
+    "y"
   _output_dir_auto_detect
   if [[ "${installed_packages[*]}" == "" ]]; then
     installed_packages+=(
