@@ -332,7 +332,8 @@ _fur() {
     _sig_dir="${6}" \
     _mirror="${7}" \
     _mirror_type="${8}" \
-    _output_dir="${9}" \
+    _dependencies_check="${9}" \
+    _output_dir="${10}" \
     _packages=() \
     _pkgs=() \
     _pkgmgr_opts=() \
@@ -342,7 +343,7 @@ _fur() {
     _url \
     _msg=()
   shift \
-    9
+    10
   _packages=(
     "$@"
   )
@@ -406,6 +407,15 @@ _get_pkgmgr_opts() {
   fi
   _opts+=(
     -U
+    --overwrite="*"
+    --noconfirm
+  )
+  if [[ "${_dependencies_check}" == "n" ]]; then
+    _opts+=(
+      -dd
+    )
+  fi
+  _opts+=(
     --overwrite="*"
     --noconfirm
   )
@@ -545,6 +555,7 @@ _show_config() {
   _msg_info "      Target architecture:   ${target_arch}"
   _msg_info "          Package manager:   ${package_manager}"
   _msg_info "              Mirror type:   ${mirror_type}"
+  _msg_info "       Dependencies check:   ${dependencies_check}"
   _msg_info "            Download only:   ${download_only}"
   _msg_info "           Repo directory:   ${repo_dir}"
   _msg_info "     Signatures directory:   ${sig_dir}"
@@ -662,7 +673,8 @@ app_opts=(
   "${repo_dir}"
   "${sig_dir}"
   "${target_mirror}"
-  "${_mirror_type}"
+  "${mirror_type}"
+  "${dependencies_check}"
   "${output_dir}"
   "${installed_packages[@]}"
 )
