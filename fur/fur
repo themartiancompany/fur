@@ -331,7 +331,8 @@ _fur() {
     _repo_dir="${5}" \
     _sig_dir="${6}" \
     _mirror="${7}" \
-    _output_dir="${8}" \
+    _mirror_type="${8}" \
+    _output_dir="${9}" \
     _packages=() \
     _pkgs=() \
     _pkgmgr_opts=() \
@@ -341,7 +342,7 @@ _fur() {
     _url \
     _msg=()
   shift \
-    8
+    9
   _packages=(
     "$@"
   )
@@ -543,7 +544,7 @@ _show_config() {
   _msg_info "          Target platform:   ${target_platform}"
   _msg_info "      Target architecture:   ${target_arch}"
   _msg_info "          Package manager:   ${package_manager}"
-  _msg_info "          Package manager:   ${package_manager}"
+  _msg_info "              Mirror type:   ${mirror_type}"
   _msg_info "            Download only:   ${download_only}"
   _msg_info "           Repo directory:   ${repo_dir}"
   _msg_info "     Signatures directory:   ${sig_dir}"
@@ -591,6 +592,8 @@ Usage:
      -m <mirror>            Fur mirror, can be 'github' or
                             'gitlab'.
                             Default: ${target_mirror}
+     -t <mirror_type>       It can be 'tree'.
+                            Default: ${mirror_type}
      -o <output_dir>        Output directory.
                             Default: ${output_dir}
 
@@ -612,7 +615,7 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'P:A:p:dw:K:m:o:cvh?' \
+    'P:A:p:dw:K:m:t:o:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -623,6 +626,7 @@ while \
     w) override_repo_dir="${OPTARG}" ;;
     K) override_sig_dir="${OPTARG}" ;;
     m) override_target_mirror="${OPTARG}" ;;
+    t) override_mirror_type="${OPTARG}" ;;
     o) override_output_dir="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
@@ -658,6 +662,7 @@ app_opts=(
   "${repo_dir}"
   "${sig_dir}"
   "${target_mirror}"
+  "${_mirror_type}"
   "${output_dir}"
   "${installed_packages[@]}"
 )
