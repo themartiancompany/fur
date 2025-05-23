@@ -20,8 +20,9 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 PREFIX ?= /usr/local
-DOC_DIR=$(DESTDIR)$(PREFIX)/share/doc/fur
-DATA_DIR=$(DESTDIR)$(PREFIX)/share/fur
+_PROJECT=fur
+DOC_DIR=$(DESTDIR)$(PREFIX)/share/doc/$(_PROJECT)
+DATA_DIR=$(DESTDIR)$(PREFIX)/share/$(_PROJECT)
 BIN_DIR=$(DESTDIR)$(PREFIX)/bin
 MAN_DIR?=$(DESTDIR)$(PREFIX)/share/man
 
@@ -44,7 +45,7 @@ shellcheck:
 
 	shellcheck -s bash $(_CHECK_FILES)
 
-install: install-fur install-doc
+install: install-$(_PROJECT) install-doc
 
 install-doc:
 
@@ -53,7 +54,7 @@ install-doc:
 	  -t \
 	  $(DOC_DIR)
 
-install-fur:
+install-$(_PROJECT):
 
 	$(_INSTALL_EXE) \
 	  "$(_PROJECT)/$(_PROJECT)" \
@@ -69,4 +70,4 @@ install-man:
 	    "$(MAN_DIR)/man1/$${_file}.1"; \
 	done
 
-.PHONY: check install install-doc install-fur install-man shellcheck
+.PHONY: check install install-doc install-$(_PROJECT) install-man shellcheck
