@@ -670,9 +670,9 @@ shift \
 installed_packages=(
   "$@"
 )
-_set_overrides
 _config_user_init \
   "${app_name}"
+_set_overrides
 _show_config
 app_opts=(
   "${target_platform}"
