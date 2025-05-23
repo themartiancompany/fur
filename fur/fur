@@ -335,6 +335,7 @@ _fur() {
     _dependencies_check="${9}" \
     _output_dir="${10}" \
     _packages=() \
+    _packages_to_retrieve=() \
     _pkgs=() \
     _pkgmgr_opts=() \
     _clone_opts=() \
