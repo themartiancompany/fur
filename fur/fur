@@ -354,7 +354,7 @@ _fur() {
   _msg_info \
     "${_msg[*]}"
   _pkgmgr_opts+=(
-    $(_get_pkgmgr_opts \
+    $(_pkgmgr_opts_get \
         "${_pkgmgr}")
   )
   _packages_to_retrieve+=(
@@ -393,7 +393,7 @@ _fur() {
     "${OLDPWD}"
 }
 
-_get_pkgmgr_opts() {
+_pkgmgr_opts_get() {
   local \
     _pkgmgr="${1}" \
     _name \
@@ -402,6 +402,11 @@ _get_pkgmgr_opts() {
     basename \
       "${_pkgmgr}")"
   if [[ "${_name}" == "inteppacman" ]]; then
+    if [[ "${quiet}" == "n" ]]; then
+      _opts+=(
+        -v
+      )
+    fi
     _opts+=(
       --
     )
