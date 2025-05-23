@@ -405,14 +405,13 @@ _get_pkgmgr_opts() {
       --
     )
   fi
-  _opts+=(
-    -U
-    --overwrite="*"
-    --noconfirm
-  )
-  if [[ "${_dependencies_check}" == "n" ]]; then
+  if [[ "${_dependencies_check}" == "y" ]]; then
     _opts+=(
-      -dd
+      -U
+    )
+  elif [[ "${_dependencies_check}" == "n" ]]; then
+    _opts+=(
+      -Udd
     )
   fi
   _opts+=(
