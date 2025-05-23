@@ -1,6 +1,25 @@
 #!/usr/bin/env bash
-#
+
 # SPDX-License-Identifier: AGPL-3.0
+
+#    ----------------------------------------------------------------------
+#    Copyright © 2024, 2025  Pellegrino Prevete
+#
+#    All rights reserved
+#    ----------------------------------------------------------------------
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 _bin="$( \
   dirname \
@@ -8,28 +27,37 @@ _bin="$( \
       command \
         -v \
 	  "env")")"
-_lib="${_bin}/../lib"
-_share="${_bin}/../share"
-source \
-  "${_lib}/libcrash-bash/crash-bash"
+_lib="$( \
+  realpath \
+    "${_bin}/../lib")"
+_crash_bash="${_lib}/libcrash-bash/crash-bash"
+_sourced \
+  "${_crash_bash}" 2>/dev/null || \
+  source \
+    "${_crash_bash}"
 
 # Check all required programs
 # are available
 _requirements() {
   _check_cmd \
     'git'
+  _check_cmd \
+    'find' \
+    'findutils'
 }
 
 # shellcheck disable=SC2034
 _global_variables() {
   install_date=""
   package_manager=""
+  dependencies_check=""
   installed_packages=()
   download_only=""
   target_platform=""
   target_arch=""
   repo_dir=""
   target_mirror=""
+  mirror_type=""
   color=""
   quiet=""
 }
@@ -41,7 +69,7 @@ _pkgs_get() {
     _pkgs < \
     <(find \
         "${_repo}" \
-	-iwholename \
+        -iwholename \
           "*/${_platform}/*/*.pkg.*" \
         -type \
           "f" \
@@ -70,24 +98,57 @@ _install_pkgs() {
     _sigs=() \
     _sig \
     _cmd=() \
-    _pwd
+    _pwd \
+    _sig_verify \
+    _msg=()
+  _sig_verify="false"
   _pwd="$( \
     pwd)"
+  _msg=(
+    "Installing downloaded packages."
+  )
+  _msg_info \
+    "${_msg[*]}"
   _sigs_get
-  _msg_info \
-    "removing all signatures ${_sigs[*]}"
-  rm \
-    -rf \
-    "${_sigs[@]}" || \
-    true
+  if [[ "${_sigs[*]}" == "" ]]; then
+    _msg=(
+      "Found no signatures."
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      1
+  fi
+  if [[ "${_sig_verify}" == "false" ]]; then
+    _msg=(
+      "Signature verification disabled,"
+      "removing all signatures '${_sigs[*]}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    rm \
+      -rf \
+      "${_sigs[@]}" || \
+      true
+  fi
   _pkgs_get
+  if [[ "${_pkgs[*]}" == "" ]]; then
+    _msg=(
+      "Found no packages."
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      1
+  fi
+  _msg=(
+    "Found and moving packages '${_pkgs[*]}'."
+  )
   _msg_info \
-    "found and moving ${_pkgs[*]}"
+    "${_msg[*]}"
   mv \
     "${_pkgs[@]}" \
     . || \
     _msg_info \
-      "error moving ${_pkgs[*]}"
+      "Error moving ${_pkgs[*]}."
   _pkgs=( $( \
     find \
       . \
@@ -97,18 +158,21 @@ _install_pkgs() {
         "*.pkg.*" \
       -exec \
         realpath \
-          {} \;)
+          '{}' \;)
   ) || \
-    true
+  true
+  _msg=(
+    "Installing ${_pkgs[*]}."
+  )
   _msg_info \
-    "installing ${_pkgs[*]}"
+    "${_msg[*]}"
   _cmd=(
     "${_pkgmgr}"
       "${_pkgmgr_opts[@]}"
       "${_pkgs[@]}"
   )
   _msg_info \
-    "running ${_cmd[*]}"
+    "Running '${_cmd[*]}'."
   if [[ "${quiet}" == "n" ]]; then
     "${_cmd[@]}"
   elif [[ "${quiet}" == "y" ]]; then
@@ -117,7 +181,7 @@ _install_pkgs() {
   fi
 }
 
-_mirror_get() {
+_http_mirror_get() {
   local \
     _domain="${1}" \
     _http \
@@ -139,6 +203,8 @@ _fur() {
     _noinstall="${4}" \
     _repo="${5}" \
     _mirror="${6}" \
+    _mirror_type="${7}" \
+    _dependencies_check="${8}" \
     _packages=() \
     _pkgs=() \
     _pkgmgr_opts=() \
@@ -147,17 +213,20 @@ _fur() {
     _pkg \
     _url
   shift \
-    6
+    8
   _packages=(
     "$@"
   )
-  _url="$( \
-    _mirror_get \
-      "${_mirror}")"
+  _msg=(
+    "Installing ${_packages[*]}."
+  )
   _msg_info \
-    "installing ${_packages[*]}"
+    "${_msg[*]}"
+  _url="$( \
+    _http_mirror_get \
+      "${_mirror}")"
   _pkgmgr_opts+=(
-    $(_get_pkgmgr_opts \
+    $(_pkgmgr_opts_get \
         "${_pkgmgr}")
   )
   if [[ "${quiet}" == "y" ]]; then
@@ -188,7 +257,6 @@ _fur() {
       clone \
         "${_git_opts[@]}" \
         "${_url}"
-    # hi if
     if [[ "${_noinstall}" != "true" ]]; then
       _install_pkgs
     fi
@@ -201,7 +269,8 @@ _get_package_manager() {
   local \
     _fallback_name="pacman" \
     _name \
-    _pkgmgr
+    _pkgmgr \
+    _msg=()
   _name="intep${_fallback_name}"
   _pkgmgr="$( \
     command \
@@ -214,14 +283,19 @@ _get_package_manager() {
         "${_fallback_name}")"
   fi
   if [[ "${_pkgmgr}" == "" ]]; then
+    _msg=(
+      "Install either '${_name}' or"
+      "'${_fallback_name}'."
+    )
     _msg_error \
-      "install either ${_name} or ${_fallback_name}"
+      "${_msg[*]}" \
+      1
   fi
   echo \
     "${_pkgmgr}"
 }
 
-_get_pkgmgr_opts() {
+_pkgmgr_opts_get() {
   local \
     _pkgmgr="${1}" \
     _name \
@@ -234,8 +308,16 @@ _get_pkgmgr_opts() {
       --
     )
   fi
+  if [[ "${_dependencies_check}" == "y" ]]; then
+    _opts+=(
+      -U
+    )
+  elif [[ "${_dependencies_check}" == "n" ]]; then
+    _opts+=(
+      -Udd
+    )
+  fi
   _opts+=(
-    -U
     --overwrite="*"
     --noconfirm
   )
@@ -245,8 +327,9 @@ _get_pkgmgr_opts() {
 
 _platform_auto_detect() {
   local \
-    _platform="arch" \
+    _platform \
     _os
+  _platform="arch"
   _os="$( \
     uname \
       -o)"
@@ -254,7 +337,9 @@ _platform_auto_detect() {
      [[ -v "TERMUX_VERSION" ]]; then
     _platform="termux"
   fi
-  echo \
+  _set_override \
+    "target" \
+    "platform" \
     "${_platform}"
 }
 
@@ -263,14 +348,21 @@ _platform_auto_detect() {
 _set_overrides() {
   local \
     _msg=()
+  if [[ -v override_color ]]; then
+    color="${override_color}"
+  elif [[ -z "${color}" ]]; then
+    color="n"
+  fi
+  if [[ -v override_quiet ]]; then
+    quiet="${override_quiet}"
+  elif [[ -z "${quiet}" ]]; then
+    quiet="y"
+  fi
   _set_override \
     "install" \
     "date" \
     "$(_get_date_human)"
-  _set_override \
-    "target" \
-    "platform" \
-    "$(_platform_auto_detect)"
+  _platform_auto_detect
   _set_override \
     "target" \
     "arch" \
@@ -296,16 +388,14 @@ _set_overrides() {
     "target" \
     "mirror" \
     "github"
-  if [[ -v override_color ]]; then
-    color="${override_color}"
-  elif [[ -z "${color}" ]]; then
-    color="n"
-  fi
-  if [[ -v override_quiet ]]; then
-    quiet="${override_quiet}"
-  elif [[ -z "${quiet}" ]]; then
-    quiet="y"
-  fi
+  _set_override \
+    "mirror" \
+    "type" \
+    "tree"
+  _set_override \
+    "dependencies" \
+    "check" \
+    "y"
   if [[ "${installed_packages[*]}" == "" ]]; then
     installed_packages+=(
       "$(basename \
@@ -314,7 +404,7 @@ _set_overrides() {
     )
     _msg=(
       "No input package given,"
-      "publishing ${local_packages[*]}"
+      "installing ${installed_packages[*]}."
     )
     _msg_info \
       "${_msg[*]}"
@@ -324,14 +414,15 @@ _set_overrides() {
 # Shows configuration options.
 _show_config() {
   _msg_info "${app_name} configuration"
-  _msg_info "             Install date:   $(_get "install" "date")"
-  _msg_info "          Target platform:   $(_get "target" "platform")"
-  _msg_info "      Target architecture:   $(_get "target" "arch")"
-  _msg_info "          Package manager:   $(_get "package" "manager")"
-  _msg_info "          Package manager:   $(_get "package" "manager")"
-  _msg_info "            Download only:   $(_get "download" "only")"
-  _msg_info "           Repo directory:   $(_get "repo" "dir")"
-  _msg_info "            Target mirror:   $(_get "target" "mirror")"
+  _msg_info "             Install date:   ${install_date}"
+  _msg_info "          Target platform:   ${target_platform}"
+  _msg_info "      Target architecture:   ${target_arch}"
+  _msg_info "          Package manager:   ${package_manager}"
+  _msg_info "              Mirror type:   ${mirror_type}"
+  _msg_info "       Dependencies check:   ${dependencies_check}"
+  _msg_info "            Download only:   ${download_only}"
+  _msg_info "           Repo directory:   ${repo_dir}"
+  _msg_info "            Target mirror:   ${target_mirror}"
   _msg_info " To be installed packages:   ${installed_packages[*]}"
 }
 
@@ -346,34 +437,41 @@ _usage() {
       -d '' \
       _usage_text << \
         ENDUSAGETEXT || true
+Fallback User Repository.
 
 Usage:
-  $(_get "app" "name")
+
+  ${app_name}
     [options]
     [packages]
+
   options:
      -p <package_manager>   Package manager.
-                            Default: $(_get "package" "manager")
+                            Default: ${package_manager}
      -d                     Download only (noinstall).
-                            Default: $(_get "download" "only")
+                            Default: ${download_only}
      -w <repo_dir>          Directory containing the fur tree.
                             To be set when download only is true,
-			    otherwise is temporary.
-                            Default: $(_get "repo" "dir")
+                            otherwise is temporary.
+                            Default: ${repo_dir}
      -P <platform>          Platform for which to retrieve packages,
                             can be 'arch' or 'termux'.
-                            Default: $(_get "target" "platform")
+                            Default: ${target_platform}
      -A <architecture>      Architecture for which to retrieve packages,
                             can be 'any', 'arm' or 'x86_64'.
-                            Default: $(_get "target" "arch")
+                            Default: ${target_arch}
      -m <mirror>            Fur mirror, can be 'github' or
                             'gitlab'.
-                            Default: $(_get "target" "mirror")
-
+                            Default: ${target_mirror}
+     -t <mirror_type>       It can be 'tree'.
+                            Default: ${mirror_type}
+     -D <y/n>               Whether to skip dependencies
+                            check.
+                            Default: ${dependencies_check}
 
      -c                     Colors.
      -h                     This message.
-     -v                   Enable verbose output
+     -v                     Enable verbose output
 ENDUSAGETEXT
   _printf \
     '%s\n' \
@@ -389,7 +487,7 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'P:A:p:dw:m:cvh?' \
+    'P:A:p:dw:m:t:D:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -399,14 +497,16 @@ while \
     d) override_download_only="true" ;;
     w) override_repo_dir="${OPTARG}" ;;
     m) override_target_mirror="${OPTARG}" ;;
+    t) override_mirror_type="${OPTARG}" ;;
+    D) override_dependencies_check="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
     h|?) _set_overrides && \
-	 _usage \
+         _usage \
            0 ;;
     *)
     _msg_error \
-      "Invalid argument '${arg}'" \
+      "Invalid argument '${arg}'." \
       0 && \
     _set_overrides && \
     _usage \
@@ -419,31 +519,21 @@ shift \
     OPTIND - 1 \
   ))
 installed_packages=(
-  $@
+  "$@"
 )
-_set_overrides
 _config_user_init \
-  "$(_get "app" "name")"
+  "${app_name}"
+_set_overrides
 _show_config
 app_opts=(
-  "$(_get \
-       "target" \
-       "platform")"
-  "$(_get \
-       "target" \
-       "arch")"
-  "$(_get \
-       "package" \
-       "manager")"
-  "$(_get \
-       "download" \
-       "only")"
-  "$(_get \
-       "repo" \
-       "dir")"
-  "$(_get \
-       "target" \
-       "mirror")"
+  "${target_platform}"
+  "${target_arch}"
+  "${package_manager}"
+  "${download_only}"
+  "${repo_dir}"
+  "${target_mirror}"
+  "${mirror_type}"
+  "${dependencies_check}"
   "${installed_packages[@]}"
 )
 _fur \
