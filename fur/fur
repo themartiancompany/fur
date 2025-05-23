@@ -194,6 +194,42 @@ _http_mirror_get() {
     "${_url}"
 }
 
+_fur_git_get() {
+  local \
+    _pkg="${1}" \
+    _mirror="${2}" \
+    _repo_dir="${3}" \
+    _git_opts=() \
+    _clone_opts=() \
+    _url \
+    _msg=()
+  if [[ "${quiet}" == "y" ]]; then
+    _clone_opts+=(
+      --quiet
+    )
+  fi
+  _msg_info \
+    "${_msg[*]}"
+  _msg=(
+    "Downloading ${_pkg}."
+  )
+  _clone_opts+=(
+    --single-branch
+    --depth=1
+  )
+  _git_opts+=(
+    "${_clone_opts[@]}"
+    --branch="${_pkg}"
+  )
+  _url="$( \
+    _http_mirror_get \
+      "${_mirror}")"
+  git \
+    clone \
+      "${_git_opts[@]}" \
+      "${_url}"
+}
+
 # $@: packages
 _fur() {
   local \
@@ -201,8 +237,8 @@ _fur() {
     _arch="${2}" \
     _pkgmgr="${3}" \
     _noinstall="${4}" \
-    _repo="${5}" \
-    _mirror="${6}" \
+    _repo_dir="${5}" \
+    _target_mirror="${6}" \
     _mirror_type="${7}" \
     _dependencies_check="${8}" \
     _packages=() \
@@ -211,7 +247,8 @@ _fur() {
     _clone_opts=() \
     _git_opts=() \
     _pkg \
-    _url
+    _url \
+    _msg=()
   shift \
     8
   _packages=(
@@ -222,77 +259,29 @@ _fur() {
   )
   _msg_info \
     "${_msg[*]}"
-  _url="$( \
-    _http_mirror_get \
-      "${_mirror}")"
   _pkgmgr_opts+=(
     $(_pkgmgr_opts_get \
         "${_pkgmgr}")
   )
-  if [[ "${quiet}" == "y" ]]; then
-    _clone_opts+=(
-      --quiet
-    )
-  fi
-  _clone_opts+=(
-    --single-branch
-    --depth=1
-  )
   for _pkg \
     in "${_packages[@]}"; do
     if [[ "${_noinstall}" != "true" ]]; then
-      _repo="$( \
+      _repo_dir="$( \
         mktemp \
           -d)"
     fi
-    _git_opts+=(
-      "${_clone_opts[@]}"
-      --branch="${_pkg}"
-    )
+    _fur_git_get \
+      "${_package}" \
+      "${_mirror}" \
+      "${_repo_dir}"
     cd \
-      "${_repo}"
-    _msg_info \
-      "cloning from ${_url}"
-    git \
-      clone \
-        "${_git_opts[@]}" \
-        "${_url}"
+      "${_repo_dir}"
     if [[ "${_noinstall}" != "true" ]]; then
       _install_pkgs
     fi
   done
   cd \
     "${OLDPWD}"
-}
-
-_get_package_manager() {
-  local \
-    _fallback_name="pacman" \
-    _name \
-    _pkgmgr \
-    _msg=()
-  _name="intep${_fallback_name}"
-  _pkgmgr="$( \
-    command \
-      -v \
-      "${_name}")"
-  if [[ "${_pkgmgr}" == "" ]]; then
-    _pkgmgr="$( \
-      command \
-        -v \
-        "${_fallback_name}")"
-  fi
-  if [[ "${_pkgmgr}" == "" ]]; then
-    _msg=(
-      "Install either '${_name}' or"
-      "'${_fallback_name}'."
-    )
-    _msg_error \
-      "${_msg[*]}" \
-      1
-  fi
-  echo \
-    "${_pkgmgr}"
 }
 
 _pkgmgr_opts_get() {
@@ -304,6 +293,11 @@ _pkgmgr_opts_get() {
     basename \
       "${_pkgmgr}")"
   if [[ "${_name}" == "inteppacman" ]]; then
+    if [[ "${quiet}" == "n" ]]; then
+      _opts+=(
+        -v
+      )
+    fi
     _opts+=(
       --
     )
@@ -343,6 +337,22 @@ _platform_auto_detect() {
     "${_platform}"
 }
 
+_package_manager_auto_detect() {
+  local \
+    _package_manager
+  _package_manager="$( \
+    command \
+      -v \
+      "inteppacman")"
+  if [[ "${_package_manager}" == "" ]]; then
+    _package_manager="pacman"
+  fi
+  _set_override \
+    "package" \
+    "manager" \
+    "${_package_manager}"
+}
+
 # Set defaults and, if present, overrides
 # from fur command line option parameters
 _set_overrides() {
@@ -368,10 +378,7 @@ _set_overrides() {
     "arch" \
     "$(uname \
          -m)"
-  _set_override \
-    "package" \
-    "manager" \
-    "inteppacman"
+  _package_manager_auto_detect
     # TODO:
     # produce a working pacman which can be
     # run as root (see pacman-root-ur tmc repo)
