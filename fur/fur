@@ -605,6 +605,9 @@ Usage:
                             Default: ${target_mirror}
      -t <mirror_type>       It can be 'tree'.
                             Default: ${mirror_type}
+     -D <y/n>               Whether to skip dependencies
+                            check.
+                            Default: ${dependencies_check}
      -o <output_dir>        Output directory.
                             Default: ${output_dir}
 
@@ -626,7 +629,7 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'P:A:p:dw:K:m:t:o:cvh?' \
+    'P:A:p:dw:K:m:t:D:o:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -638,6 +641,7 @@ while \
     K) override_sig_dir="${OPTARG}" ;;
     m) override_target_mirror="${OPTARG}" ;;
     t) override_mirror_type="${OPTARG}" ;;
+    D) override_dependencies_check="${OPTARG}" ;;
     o) override_output_dir="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;

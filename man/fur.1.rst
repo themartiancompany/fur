@@ -77,6 +77,9 @@ Options
                         can be 'any', 'arm' or 'x86_64'.
 -m mirror               Fur mirror, can be 'github' or
                         'gitlab'.
+-t mirror_type          It can be 'tree'.
+-D y\/n                 Whether to skip dependencies
+                        check.
 -o output_dir           Output directory for the packages.
 
 -h                      Display help.
