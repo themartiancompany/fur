@@ -68,7 +68,7 @@ _pkgs_get() {
     $'\0' \
     _pkgs < \
     <(find \
-        "${_repo}" \
+        "${_repo_dir}" \
         -iwholename \
           "*/${_platform}/*/*.pkg.*" \
         -type \
@@ -83,9 +83,14 @@ _sigs_get() {
     $'\0' \
     _sigs < \
     <(find \
-        "${_repo}" \
-	-iwholename \
-          "*.pkg.*.sig" \
+        "${_repo_dir}" \
+	\( \
+          -iwholename \
+            "*.pkg.*.sig" \
+          -o \
+          -iwholename \
+            "*.pkg.*.asc" \
+	\) \
         -type \
           "f" \
         -print0 || \
@@ -94,6 +99,7 @@ _sigs_get() {
 
 _install_pkgs() {
   local \
+    _repo_dir="${1}" \
     _pkgs=() \
     _sigs=() \
     _sig \
@@ -151,11 +157,11 @@ _install_pkgs() {
       "Error moving ${_pkgs[*]}."
   _pkgs=( $( \
     find \
-      . \
+      "${_repo_dir}" \
       -maxdepth \
         "1" \
       -iname \
-        "*.pkg.*" \
+        "*.pkg.tar*" \
       -exec \
         realpath \
           '{}' \;)
@@ -230,6 +236,12 @@ _fur_git_get() {
       "${_url}"
 }
 
+_fur_github_release_get() {
+  local \
+    _repo_dir="${1}" \
+    _msg=()
+}
+
 # $@: packages
 _fur() {
   local \
@@ -277,7 +289,8 @@ _fur() {
     cd \
       "${_repo_dir}"
     if [[ "${_noinstall}" != "true" ]]; then
-      _install_pkgs
+      _install_pkgs \
+        "${_repo_dir}"
     fi
   done
   cd \
