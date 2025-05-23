@@ -31,7 +31,7 @@ DOC_FILES=\
 _BASH_FILES=\
   "$(_PROJECT)"
 _CHECK_FILES=\
-  "$(wildcard $(_PROJECT)/*)
+  $(wildcard $(_PROJECT)/*)
 
 _INSTALL_FILE=install -vDm644
 _INSTALL_DIR=install -vdm755
@@ -45,7 +45,7 @@ shellcheck:
 
 	shellcheck -s bash $(_CHECK_FILES)
 
-install: install-$(_PROJECT) install-doc
+install: install-$(_PROJECT) install-doc install-man
 
 install-doc:
 
