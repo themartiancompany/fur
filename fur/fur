@@ -27,16 +27,23 @@ _bin="$( \
       command \
         -v \
 	  "env")")"
-_lib="${_bin}/../lib"
-_share="${_bin}/../share"
-source \
-  "${_lib}/libcrash-bash/crash-bash"
+_lib="$( \
+  realpath \
+    "${_bin}/../lib")"
+_crash_bash="${_lib}/libcrash-bash/crash-bash"
+_sourced \
+  "${_crash_bash}" 2>/dev/null || \
+  source \
+    "${_crash_bash}"
 
 # Check all required programs
 # are available
 _requirements() {
   _check_cmd \
     'git'
+  _check_cmd \
+    'find' \
+    'findutils'
 }
 
 # shellcheck disable=SC2034
@@ -242,7 +249,7 @@ _fur_git_get() {
     "${_repo_dir}"
   if [[ -e "fur" ]]; then
     _msg=(
-      "fur directory exists"
+      "Fur directory exists"
       "already in '${_repo_dir}',"
       "deleting."
     )
