@@ -277,7 +277,7 @@ _fur_git_get() {
       "${_sig}" \
       "${_repo_dir}" || ( \
       _msg=(
-        "Error moving '${_sig}' into."
+        "Error moving '${_sig}' into"
         "'${_repo_dir}'."
       ) && \
       _msg_error \
@@ -357,11 +357,11 @@ _fur() {
     $(_get_pkgmgr_opts \
         "${_pkgmgr}")
   )
-  _packages_to_retrieve=(
+  _packages_to_retrieve+=(
     "${_packages[@]}"
   )
   while \
-    (( "${#_packages_to_retrieve}" > 0 )); do
+    (( "${#_packages_to_retrieve[@]}" > 0 )); do
     _package="${_packages_to_retrieve[0]}"
     _fur_git_get \
       "${_package}" \
