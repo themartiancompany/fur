@@ -300,9 +300,9 @@ _fur_git_get() {
   _msg_info \
     "${_msg[*]}"
   for _pkg in "${_pkgs[@]}"; do
-    pacman \
-      -Ui \
-      "${_pkg}"
+    # pacman \
+    #   -U \
+    #   "${_pkg}"
     mv \
       "${_pkg}" \
       "${_repo_dir}" || ( \
@@ -363,9 +363,9 @@ _fur() {
     (( "${#_packages_to_retrieve}" > 0 )); do
     _package="${_packages_to_retrieve[0]}"
     _fur_git_get \
-     "${_package}" \
-     "${_mirror}" \
-     "${_repo_dir}"
+      "${_package}" \
+      "${_mirror}" \
+      "${_repo_dir}"
     _packages_to_retrieve=()
     for _pkg in "${_packages[@]}"; do
       if [[ "${_pkg}" != "${_package}" ]]; then
