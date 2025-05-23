@@ -271,8 +271,8 @@ _fur() {
           -d)"
     fi
     _fur_git_get \
-      "${_package}" \
-      "${_mirror}" \
+      "${_pkg}" \
+      "${_target_mirror}" \
       "${_repo_dir}"
     cd \
       "${_repo_dir}"
