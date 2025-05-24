@@ -273,7 +273,8 @@ _fur_git_get() {
     "${_repo_dir}"
   rm \
     -rf \
-    "${_work_dir}/${_pkg}"
+    "${_work_dir}/${_pkg}" || \
+    true
 }
 
 _fur_github_release_get() {
@@ -409,7 +410,7 @@ _output_dir_auto_detect() {
 
 _work_dir_auto_detect() {
   local \
-    _repo_dir
+    _work_dir
   _work_dir="${HOME}/.cache/fur/install"
   if [[ ! -e "${_work_dir}" ]]; then
     mkdir \
@@ -621,13 +622,13 @@ while \
          _usage \
            0 ;;
     *)
-    _msg_error \
-      "Invalid argument '${arg}'." \
-      0 && \
-    _set_overrides && \
-    _usage \
-      1
-    ;;
+      _msg_error \
+        "Invalid argument '${arg}'." \
+        0 && \
+      _set_overrides && \
+      _usage \
+        1
+      ;;
   esac
 done
 shift \
