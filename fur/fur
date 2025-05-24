@@ -56,6 +56,7 @@ _global_variables() {
   target_platform=""
   target_arch=""
   repo_dir=""
+  sig_dir=""
   target_mirror=""
   mirror_type=""
   color=""
@@ -100,6 +101,7 @@ _sigs_get() {
 _install_pkgs() {
   local \
     _repo_dir="${1}" \
+    _sig_dir="${2}" \
     _pkgs=() \
     _sigs=() \
     _sig \
@@ -250,9 +252,10 @@ _fur() {
     _pkgmgr="${3}" \
     _noinstall="${4}" \
     _repo_dir="${5}" \
-    _target_mirror="${6}" \
-    _mirror_type="${7}" \
-    _dependencies_check="${8}" \
+    _sig_dir="${6}" \
+    _target_mirror="${7}" \
+    _mirror_type="${8}" \
+    _dependencies_check="${9}" \
     _packages=() \
     _pkgs=() \
     _pkgmgr_opts=() \
@@ -262,7 +265,7 @@ _fur() {
     _url \
     _msg=()
   shift \
-    8
+    9
   _packages=(
     "$@"
   )
@@ -290,7 +293,8 @@ _fur() {
       "${_repo_dir}"
     if [[ "${_noinstall}" != "true" ]]; then
       _install_pkgs \
-        "${_repo_dir}"
+        "${_repo_dir}" \
+        "${_sig_dir}"
     fi
   done
   cd \
@@ -350,6 +354,34 @@ _platform_auto_detect() {
     "${_platform}"
 }
 
+_output_dir_auto_detect() {
+  local \
+    _output_dir
+  _output_dir="${HOME}/.cache/fur/packages"
+  mkdir \
+    -p \
+    "${_output_dir}"
+  _set_override \
+    "output" \
+    "dir" \
+    "${_output_dir}"
+}
+
+_repo_dir_auto_detect() {
+  local \
+    _repo_dir
+  _repo_dir="${HOME}/.cache/fur/packages"
+  if [[ -e "${_repo_dir}" ]]; then
+    mkdir \
+      -p \
+      "${_repo_dir}"
+  fi
+  _set_override \
+    "repo" \
+    "dir" \
+    "${_repo_dir}"
+}
+
 _package_manager_auto_detect() {
   local \
     _package_manager
@@ -396,10 +428,7 @@ _set_overrides() {
     # produce a working pacman which can be
     # run as root (see pacman-root-ur tmc repo)
     # "$(_get_package_manager)"
-  _set_override \
-    "repo" \
-    "dir" \
-    "${HOME}"
+  _repo_dir_auto_detect
   _set_override \
     "download" \
     "only" \
@@ -442,6 +471,7 @@ _show_config() {
   _msg_info "       Dependencies check:   ${dependencies_check}"
   _msg_info "            Download only:   ${download_only}"
   _msg_info "           Repo directory:   ${repo_dir}"
+  _msg_info "     Signatures directory:   ${sig_dir}"
   _msg_info "            Target mirror:   ${target_mirror}"
   _msg_info " To be installed packages:   ${installed_packages[*]}"
 }
@@ -474,6 +504,8 @@ Usage:
                             To be set when download only is true,
                             otherwise is temporary.
                             Default: ${repo_dir}
+     -K <sig_dir>           Signatures keys directory.
+                            Default: ${sig_dir}
      -P <platform>          Platform for which to retrieve packages,
                             can be 'arch' or 'termux'.
                             Default: ${target_platform}
@@ -507,7 +539,7 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'P:A:p:dw:m:t:D:cvh?' \
+    'P:A:p:dw:K:m:t:D:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -516,6 +548,7 @@ while \
     p) override_package_manager="${OPTARG}" ;;
     d) override_download_only="true" ;;
     w) override_repo_dir="${OPTARG}" ;;
+    K) override_sig_dir="${OPTARG}" ;;
     m) override_target_mirror="${OPTARG}" ;;
     t) override_mirror_type="${OPTARG}" ;;
     D) override_dependencies_check="${OPTARG}" ;;
@@ -551,6 +584,7 @@ app_opts=(
   "${package_manager}"
   "${download_only}"
   "${repo_dir}"
+  "${sig_dir}"
   "${target_mirror}"
   "${mirror_type}"
   "${dependencies_check}"
