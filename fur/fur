@@ -269,7 +269,7 @@ _fur_git_get() {
       "${_url}" \
       "${_work_dir}/${_pkg}"
   _pkgs_prepare \
-    "${_work_dir}/${_pkg}" \
+    "${_work_dir}" \
     "${_repo_dir}"
   rm \
     -rf \
