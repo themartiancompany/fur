@@ -56,6 +56,7 @@ _global_variables() {
   target_platform=""
   target_arch=""
   repo_dir=""
+  work_dir=""
   sig_dir=""
   target_mirror=""
   mirror_type=""
@@ -64,12 +65,14 @@ _global_variables() {
 }
 
 _pkgs_get() {
+  local \
+    _dir="${1}"
   mapfile \
     -d \
     $'\0' \
     _pkgs < \
     <(find \
-        "${_repo_dir}" \
+        "${_dir}" \
         -iwholename \
           "*/${_platform}/*/*.pkg.*" \
         -type \
@@ -96,6 +99,32 @@ _sigs_get() {
           "f" \
         -print0 || \
       true)
+}
+
+_pkgs_prepare() {
+  local \
+    _tree_dir="${1}" \
+    _out_dir="${2}"
+  _pkgs_get \
+    "${_tree_dir}"
+  if [[ "${_pkgs[*]}" == "" ]]; then
+    _msg=(
+      "Found no packages."
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      1
+  fi
+  _msg=(
+    "Found and moving packages '${_pkgs[*]}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  mv \
+    "${_pkgs[@]}" \
+    "${_out_dir}" || \
+    _msg_info \
+      "Error moving ${_pkgs[*]}."
 }
 
 _install_pkgs() {
@@ -138,25 +167,9 @@ _install_pkgs() {
       "${_sigs[@]}" || \
       true
   fi
-  _pkgs_get
-  if [[ "${_pkgs[*]}" == "" ]]; then
-    _msg=(
-      "Found no packages."
-    )
-    _msg_error \
-      "${_msg[*]}" \
-      1
-  fi
-  _msg=(
-    "Found and moving packages '${_pkgs[*]}'."
-  )
-  _msg_info \
-    "${_msg[*]}"
-  mv \
-    "${_pkgs[@]}" \
-    . || \
-    _msg_info \
-      "Error moving ${_pkgs[*]}."
+  # _pkgs_prepare \
+  #   "${_work_dir}/${_pkg}" \
+  #   "${_repo_dir}"
   _pkgs=( $( \
     find \
       "${_repo_dir}" \
@@ -202,11 +215,21 @@ _http_mirror_get() {
     "${_url}"
 }
 
+_file_hash() {
+  local \
+    _file="${1}"
+  sha256sum \
+    "${_file}" | \
+    awk \
+      '{print $1}'
+}
+
 _fur_git_get() {
   local \
     _pkg="${1}" \
     _mirror="${2}" \
     _repo_dir="${3}" \
+    _work_dir="${4}" \
     _git_opts=() \
     _clone_opts=() \
     _url \
@@ -236,7 +259,10 @@ _fur_git_get() {
     clone \
       "${_git_opts[@]}" \
       "${_url}" \
-      "${_repo_dir}/fur"
+      "${_work_dir}/${_pkg}"
+  _pkgs_prepare \
+    "${_work_dir}/${_pkg}" \
+    "${_repo_dir}"
 }
 
 _fur_github_release_get() {
@@ -253,10 +279,11 @@ _fur() {
     _pkgmgr="${3}" \
     _noinstall="${4}" \
     _repo_dir="${5}" \
-    _sig_dir="${6}" \
-    _target_mirror="${7}" \
-    _mirror_type="${8}" \
-    _dependencies_check="${9}" \
+    _work_dir="${6}" \
+    _sig_dir="${7}" \
+    _target_mirror="${8}" \
+    _mirror_type="${9}" \
+    _dependencies_check="${10}" \
     _packages=() \
     _pkgs=() \
     _pkgmgr_opts=() \
@@ -266,7 +293,7 @@ _fur() {
     _url \
     _msg=()
   shift \
-    9
+    10
   _packages=(
     "$@"
   )
@@ -281,23 +308,24 @@ _fur() {
   )
   for _pkg \
     in "${_packages[@]}"; do
-    if [[ "${_noinstall}" != "true" ]]; then
-      _repo_dir="$( \
-        mktemp \
-          -d)"
-    fi
+    # if [[ "${_noinstall}" != "true" ]]; then
+    #   _repo_dir="$( \
+    #     mktemp \
+    #       -d)"
+    # fi
     _fur_git_get \
       "${_pkg}" \
       "${_target_mirror}" \
-      "${_repo_dir}"
-    cd \
-      "${_repo_dir}"
-    if [[ "${_noinstall}" != "true" ]]; then
-      _install_pkgs \
-        "${_repo_dir}" \
-        "${_sig_dir}"
-    fi
+      "${_repo_dir}" \
+      "${_work_dir}"
   done
+  cd \
+    "${_repo_dir}"
+  if [[ "${_noinstall}" != "true" ]]; then
+    _install_pkgs \
+      "${_repo_dir}" \
+      "${_sig_dir}"
+  fi
   cd \
     "${OLDPWD}"
 }
@@ -368,6 +396,21 @@ _output_dir_auto_detect() {
     "${_output_dir}"
 }
 
+_work_dir_auto_detect() {
+  local \
+    _repo_dir
+  _work_dir="${HOME}/.cache/fur/install"
+  if [[ -e "${_repo_dir}" ]]; then
+    mkdir \
+      -p \
+      "${_work_dir}"
+  fi
+  _set_override \
+    "work" \
+    "dir" \
+    "${_work_dir}"
+}
+
 _repo_dir_auto_detect() {
   local \
     _repo_dir
@@ -428,8 +471,8 @@ _set_overrides() {
     # TODO:
     # produce a working pacman which can be
     # run as root (see pacman-root-ur tmc repo)
-    # "$(_get_package_manager)"
   _repo_dir_auto_detect
+  _work_dir_auto_detect
   _set_override \
     "download" \
     "only" \
@@ -446,6 +489,10 @@ _set_overrides() {
     "dependencies" \
     "check" \
     "y"
+  _set_override \
+    "sig" \
+    "dir" \
+    "${HOME}/.config/${app_name}"
   if [[ "${installed_packages[*]}" == "" ]]; then
     installed_packages+=(
       "$(basename \
@@ -472,6 +519,7 @@ _show_config() {
   _msg_info "       Dependencies check:   ${dependencies_check}"
   _msg_info "            Download only:   ${download_only}"
   _msg_info "           Repo directory:   ${repo_dir}"
+  _msg_info "           Work directory:   ${work_dir}"
   _msg_info "     Signatures directory:   ${sig_dir}"
   _msg_info "            Target mirror:   ${target_mirror}"
   _msg_info " To be installed packages:   ${installed_packages[*]}"
@@ -521,6 +569,8 @@ Usage:
      -D <y/n>               Whether to skip dependencies
                             check.
                             Default: ${dependencies_check}
+     -C <work_dir>          Work directory
+                            Default: ${work_dir}
 
      -c                     Colors.
      -h                     This message.
@@ -540,7 +590,7 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'P:A:p:dw:K:m:t:D:cvh?' \
+    'P:A:p:dw:K:m:t:D:C:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -553,6 +603,7 @@ while \
     m) override_target_mirror="${OPTARG}" ;;
     t) override_mirror_type="${OPTARG}" ;;
     D) override_dependencies_check="${OPTARG}" ;;
+    C) override_work_dir="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
     h|?) _set_overrides && \
@@ -585,6 +636,7 @@ app_opts=(
   "${package_manager}"
   "${download_only}"
   "${repo_dir}"
+  "${work_dir}"
   "${sig_dir}"
   "${target_mirror}"
   "${mirror_type}"
