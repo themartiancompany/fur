@@ -255,6 +255,14 @@ _fur_git_get() {
   _url="$( \
     _http_mirror_get \
       "${_mirror}")"
+  _msg=(
+    "The directory"
+    "'${_work_dir}/${_pkg}'"
+    "exists already."
+  )
+  rm \
+    -rf \
+    "${_work_dir}/${_pkg}"
   git \
     clone \
       "${_git_opts[@]}" \
@@ -263,6 +271,9 @@ _fur_git_get() {
   _pkgs_prepare \
     "${_work_dir}/${_pkg}" \
     "${_repo_dir}"
+  rm \
+    -rf \
+    "${_work_dir}/${_pkg}"
 }
 
 _fur_github_release_get() {
