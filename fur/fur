@@ -138,7 +138,7 @@ _install_pkgs() {
       -rf \
       "${_sigs[@]}" || \
       true
-  fi 
+  fi
   # _pkgs_get
   # if [[ "${_pkgs[*]}" == "" ]]; then
   #   _msg=(
@@ -219,6 +219,7 @@ _fur_git_get() {
     _repo_dir="${3}" \
     _git_opts=() \
     _clone_opts=() \
+    _url \
     _pkgs=() \
     _oldpwd \
     _msg=()
@@ -328,6 +329,12 @@ _fur_git_get() {
     "${_repo_dir}/fur"
 }
 
+_fur_github_release_get() {
+  local \
+    _repo_dir="${1}" \
+    _msg=()
+}
+
 # $@: packages
 _fur() {
   local \
@@ -337,7 +344,7 @@ _fur() {
     _noinstall="${4}" \
     _repo_dir="${5}" \
     _sig_dir="${6}" \
-    _mirror="${7}" \
+    _target_mirror="${7}" \
     _mirror_type="${8}" \
     _dependencies_check="${9}" \
     _output_dir="${10}" \
@@ -372,7 +379,7 @@ _fur() {
     _package="${_packages_to_retrieve[0]}"
     _fur_git_get \
       "${_package}" \
-      "${_mirror}" \
+      "${_target_mirror}" \
       "${_repo_dir}"
     _packages_to_retrieve=()
     for _pkg in "${_packages[@]}"; do
