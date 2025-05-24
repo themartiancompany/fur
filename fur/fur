@@ -400,7 +400,7 @@ _work_dir_auto_detect() {
   local \
     _repo_dir
   _work_dir="${HOME}/.cache/fur/install"
-  if [[ -e "${_repo_dir}" ]]; then
+  if [[ ! -e "${_work_dir}" ]]; then
     mkdir \
       -p \
       "${_work_dir}"
@@ -415,7 +415,7 @@ _repo_dir_auto_detect() {
   local \
     _repo_dir
   _repo_dir="${HOME}/.cache/fur/packages"
-  if [[ -e "${_repo_dir}" ]]; then
+  if [[ ! -e "${_repo_dir}" ]]; then
     mkdir \
       -p \
       "${_repo_dir}"
