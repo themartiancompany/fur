@@ -235,7 +235,8 @@ _fur_git_get() {
   git \
     clone \
       "${_git_opts[@]}" \
-      "${_url}"
+      "${_url}" \
+      "${_repo_dir}/fur"
 }
 
 _fur_github_release_get() {
