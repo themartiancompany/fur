@@ -265,8 +265,8 @@ _depends_check() {
          pacman \
            -S \
            "${_depend}"
-       elif [[ "${_available}" != "" ]]; then
-         if [[ " ${_depends_retrieved} " != *" ${_depend} "* ]]; then
+       elif [[ "${_available}" == "" ]]; then
+         if [[ " ${_depends_retrieved[*]} " != *" ${_depend} "* ]]; then
            _msg=(
              "Looking for the package on"
              "the fur."
@@ -296,6 +296,7 @@ _fur_git_get() {
     _url \
     _pkgs=() \
     _oldpwd \
+    _dir \
     _msg=()
   if [[ "${quiet}" == "y" ]]; then
     _clone_opts+=(
@@ -338,6 +339,13 @@ _fur_git_get() {
     clone \
       "${_git_opts[@]}" \
       "${_url}"
+  for _dir in "fur/"*; do
+    if [[ ! -d "${_target_platform}" ]]; then
+      rm \
+        -rf \
+	"${_dir}"
+    fi
+  done
   _sigs_get
   if [[ "${_sigs[*]}" == "" ]]; then
     _msg=(
