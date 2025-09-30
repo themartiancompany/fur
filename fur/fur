@@ -61,6 +61,7 @@ _global_variables() {
   target_mirror=""
   repo_name=""
   mirror_type=""
+  git_protocol=""
   output_dir=""
   color=""
   quiet=""
@@ -191,15 +192,20 @@ _install_pkgs() {
   fi
 }
 
-_http_mirror_get() {
+_mirror_get() {
   local \
     _domain="${1}" \
-    _http \
+    _protocol="${2}" \
+    _location \
     _ns \
     _url
-  _http="https://${_domain}.com"
   _ns="themartiancompany"
-  _url="${_http}/${_ns}/fur"
+  if [[ "${_protocol}" == "http" ]]; then
+    _location="https://${_domain}.com/"
+  elif [[ "${_protocol}" == "ssh" ]]; then
+    _location="${_domain}:"
+  fi
+  _url="${_location}${_ns}/fur"
   echo \
     "${_url}"
 }
@@ -369,8 +375,9 @@ _fur_git_get() {
     --branch="${_pkg}"
   )
   _url="$( \
-    _http_mirror_get \
-      "${_mirror}")"
+    _mirror_get \
+      "${_mirror}" \
+      "${_git_protocol}")"
   _oldpwd="$( \
     pwd)"
   cd \
@@ -518,9 +525,10 @@ _fur() {
     _target_mirror="${7}" \
     _repo_name="${8}" \
     _mirror_type="${9}" \
-    _dependencies_check="${10}" \
-    _dependencies_resolve="${11}" \
-    _output_dir="${12}" \
+    _git_protocol="${10}" \
+    _dependencies_check="${11}" \
+    _dependencies_resolve="${12}" \
+    _output_dir="${13}" \
     _packages=() \
     _packages_to_retrieve=() \
     _depends_retrieved=() \
@@ -532,7 +540,7 @@ _fur() {
     _url \
     _msg=()
   shift \
-    12
+    13
   _packages=(
     "$@"
   )
@@ -726,6 +734,10 @@ _set_overrides() {
     "type" \
     "tree"
   _set_override \
+    "git" \
+    "protocol" \
+    "http"
+  _set_override \
     "dependencies" \
     "check" \
     "y"
@@ -835,7 +847,7 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'P:A:p:dw:K:m:t:D:o:cvh?' \
+    'P:A:p:dw:K:m:l:t:D:R:o:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -848,6 +860,7 @@ while \
     m) override_target_mirror="${OPTARG}" ;;
     l) override_repo_name="${OPTARG}" ;;
     t) override_mirror_type="${OPTARG}" ;;
+    L) override_git_protocol="${OPTARG}" ;;
     D) override_dependencies_check="${OPTARG}" ;;
     R) override_dependencies_resolve="${OPTARG}" ;;
     o) override_output_dir="${OPTARG}" ;;
@@ -888,6 +901,7 @@ app_opts=(
   "${target_mirror}"
   "${repo_name}"
   "${mirror_type}"
+  "${git_protocol}"
   "${dependencies_check}"
   "${dependencies_resolve}"
   "${output_dir}"
