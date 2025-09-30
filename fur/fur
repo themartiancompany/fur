@@ -65,12 +65,14 @@ _global_variables() {
 }
 
 _pkgs_get() {
+  local \
+    _dir="${1}"
   mapfile \
     -d \
     $'\0' \
     _pkgs < \
     <(find \
-        "${_repo_dir}" \
+        "${_dir}" \
         -iwholename \
           "*/${_platform}/*/*.pkg.*" \
         -type \
@@ -80,19 +82,21 @@ _pkgs_get() {
 }
 
 _sigs_get() {
+  local \
+    _dir="${1}"
   mapfile \
     -d \
     $'\0' \
     _sigs < \
     <(find \
-        "${_repo_dir}" \
-	\( \
+        "${_dir}" \
+        \( \
           -iwholename \
             "*.pkg.*.sig" \
           -o \
           -iwholename \
             "*.pkg.*.asc" \
-	\) \
+        \) \
         -type \
           "f" \
         -print0 || \
@@ -118,7 +122,8 @@ _install_pkgs() {
   )
   _msg_info \
     "${_msg[*]}"
-  _sigs_get
+  _sigs_get \
+    "${_repo_dir}"
   if [[ "${_sigs[*]}" == "" ]]; then
     _msg=(
       "Found no signatures."
@@ -273,13 +278,13 @@ _depends_check() {
            )
            _msg_info \
              "${_msg[*]}"
+           _depends_retrieved+=(
+             "${_depend}"
+           )
            _fur_git_get \
              "${_depend}" \
              "${_target_mirror}" \
              "${_repo_dir}"
-           _depends_retrieved+=(
-             "${_depend}"
-           )
 	 fi
        fi 
     fi
@@ -339,14 +344,22 @@ _fur_git_get() {
     clone \
       "${_git_opts[@]}" \
       "${_url}"
+  _msg=(
+    "Removing extra platforms."
+  )
+  _msg_info \
+    "${_msg[*]}"
   for _dir in "fur/"*; do
-    if [[ ! -d "${_target_platform}" ]]; then
+    if [[ ! -d "${_dir}" || \
+	  "$(basename \
+	       "${_dir}")" != "${_platform}" ]]; then
       rm \
         -rf \
 	"${_dir}"
     fi
   done
-  _sigs_get
+  _sigs_get \
+    "${_repo_dir}/fur"
   if [[ "${_sigs[*]}" == "" ]]; then
     _msg=(
       "Found no signatures"
@@ -374,7 +387,8 @@ _fur_git_get() {
         "${_msg[*]}" \
         0 )
   done
-  _pkgs_get
+  _pkgs_get \
+    "${_repo_dir}/fur"
   if [[ "${_pkgs[*]}" == "" ]]; then
     _msg=(
       "Found no packages."
@@ -390,8 +404,6 @@ _fur_git_get() {
   _msg_info \
     "${_msg[*]}"
   for _pkg in "${_pkgs[@]}"; do
-    _depends_check \
-      "${_pkg}"
     mv \
       "${_pkg}" \
       "${_repo_dir}" || ( \
@@ -402,6 +414,10 @@ _fur_git_get() {
       _msg_error \
         "${_msg[*]}" \
         1 )
+    _depends_check \
+      "${_repo_dir}/$( \
+        basename \
+	  "${_pkg}")"
   done
   cd \
     "${_oldpwd}"
