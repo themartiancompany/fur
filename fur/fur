@@ -244,9 +244,9 @@ _depends_check() {
       _msg=(
         "Package '${_depend}'"
         "not installed,"
-	"checking if available"
-	"in default"
-	"repositories."
+        "checking if available"
+        "in default"
+        "repositories."
       )
       _msg_info \
         "${_msg[*]}"
@@ -254,16 +254,33 @@ _depends_check() {
         pacman \
           -Si \
           "${_depend}" \
-	  2>/dev/null || \
-	true)"
+          2>/dev/null || \
+        true)"
        if [[ "${_available}" != "" ]]; then
          _msg=(
-           "The package is available,"
-	   "installing it."
+           "The package is available"
+           "in default binary repositories,"
+           "installing it."
          )
          pacman \
            -S \
-	   "${_depend}"
+           "${_depend}"
+       elif [[ "${_available}" != "" ]]; then
+         if [[ " ${_depends_retrieved} " != *" ${_depend} "* ]]; then
+           _msg=(
+             "Looking for the package on"
+             "the fur."
+           )
+           _msg_info \
+             "${_msg[*]}"
+           _fur_git_get \
+             "${_depend}" \
+             "${_target_mirror}" \
+             "${_repo_dir}"
+           _depends_retrieved+=(
+             "${_depend}"
+           )
+	 fi
        fi 
     fi
   done
@@ -406,6 +423,7 @@ _fur() {
     _output_dir="${10}" \
     _packages=() \
     _packages_to_retrieve=() \
+    _depends_retrieved=() \
     _pkgs=() \
     _pkgmgr_opts=() \
     _clone_opts=() \
