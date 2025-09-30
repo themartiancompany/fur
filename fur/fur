@@ -238,58 +238,64 @@ _depends_check() {
     "$_depends_string" || \
   true
   for _depend in "${_depends[@]}"; do
-    echo \
-      "Checking '${_depend}'."
-    _installed="$( \
-      pacman \
-        -Q \
-        "${_depend}" 2>/dev/null || \
-      true)"
-    if [[ "${_installed}" == "" ]]; then
-      _msg=(
-        "Package '${_depend}'"
-        "not installed,"
-        "checking if available"
-        "in default"
-        "repositories."
+    if [[ " ${_depends_retrieved[*]} " != *" ${_depend} "* ]]; then
+      msg=(
+        "Checking unretrieved"
+        "depend '${_depend}'."
       )
       _msg_info \
         "${_msg[*]}"
-      _available="$( \
+      _installed="$( \
         pacman \
-          -Si \
-          "${_depend}" \
-          2>/dev/null || \
+          -Q \
+          "${_depend}" 2>/dev/null || \
         true)"
-       if [[ "${_available}" != "" ]]; then
-         _msg=(
-           "The package is available"
-           "in default binary repositories,"
-           "installing it."
-         )
-         pacman \
-           -S \
-           "${_depend}"
-       elif [[ "${_available}" == "" ]]; then
-         if [[ " ${_depends_retrieved[*]} " != *" ${_depend} "* ]]; then
+      if [[ "${_installed}" == "" ]]; then
+        _msg=(
+          "Package '${_depend}'"
+          "not installed,"
+          "checking if available"
+          "in default"
+          "repositories."
+        )
+        _msg_info \
+          "${_msg[*]}"
+        _available="$( \
+          pacman \
+            -Si \
+            "${_depend}" \
+            2>/dev/null || \
+          true)"
+         if [[ "${_available}" != "" ]]; then
            _msg=(
-             "Looking for the package on"
-             "the fur."
+             "The package is available"
+             "in default binary repositories,"
+             "installing it."
            )
-           _msg_info \
-             "${_msg[*]}"
-           _packages_to_retrieve+=(
+           pacman \
+             -S \
              "${_depend}"
-           )
-           _fur_git_get \
-             "${_depend}" \
-             "${_target_mirror}" \
-             "${_repo_dir}"
-         fi
-       fi 
-    elif [[ "${_installed}" != "" ]]; then
-      _package_retrieved \
-        "${_depend}"
+         elif [[ "${_available}" == "" ]]; then
+           if [[ " ${_depends_retrieved[*]} " != *" ${_depend} "* ]]; then
+             _msg=(
+               "Looking for the package on"
+               "the fur."
+             )
+             _msg_info \
+               "${_msg[*]}"
+             _packages_to_retrieve+=(
+               "${_depend}"
+             )
+             _fur_git_get \
+               "${_depend}" \
+               "${_target_mirror}" \
+               "${_repo_dir}"
+           fi
+         fi 
+      elif [[ "${_installed}" != "" ]]; then
+        _package_retrieved \
+          "${_depend}"
+      fi
     fi
   done
 }
@@ -438,7 +444,8 @@ _fur_git_get() {
   for _pkg in "${_pkgs[@]}"; do
     _pkgname="$( \
       package-info-get \
-        "${_pkg}")"
+        "${_pkg}" \
+	"pkgname")"
     mv \
       "${_pkg}" \
       "${_repo_dir}" || ( \
