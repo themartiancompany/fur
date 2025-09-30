@@ -285,8 +285,11 @@ _depends_check() {
              "${_depend}" \
              "${_target_mirror}" \
              "${_repo_dir}"
-	 fi
+         fi
        fi 
+    elif [[ "${_installed}" != "" ]]; then
+      _package_retrieved \
+        "${_depend}"
     fi
   done
 }
@@ -295,9 +298,10 @@ _package_retrieved() {
   local \
     _pkg="${1}" \
     _array=() \
-    _remaining
+    _remaining \
+    _msg=()
   for _remaining in "${_packages_to_retrieve[@]}"; do
-    if [[ "${_remaining}" != "${_pkg}" ]]; then
+    if [[ "${_remaining}" != "${_pkgname}" ]]; then
       _array+=(
         "${_remaining}"
       )
@@ -306,6 +310,12 @@ _package_retrieved() {
   _packages_to_retrieve=(
     "${_array[@]}"
   )
+  _msg=(
+    "Package '${_pkg}' retrieved."
+    "Left '${_packages_to_retrieve[@]}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
 }
 
 _fur_git_get() {
@@ -319,6 +329,7 @@ _fur_git_get() {
     _pkgs=() \
     _oldpwd \
     _dir \
+    _pkgname \
     _msg=()
   if [[ "${quiet}" == "y" ]]; then
     _clone_opts+=(
@@ -425,6 +436,9 @@ _fur_git_get() {
   _msg_info \
     "${_msg[*]}"
   for _pkg in "${_pkgs[@]}"; do
+    _pkgname="$( \
+      package-info-get \
+        "${_pkg}")"
     mv \
       "${_pkg}" \
       "${_repo_dir}" || ( \
@@ -436,7 +450,7 @@ _fur_git_get() {
         "${_msg[*]}" \
         1 )
     _package_retrieved \
-      "${_pkg}"
+      "${_pkgname}"
     _depends_check \
       "${_repo_dir}/$( \
         basename \
