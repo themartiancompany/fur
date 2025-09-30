@@ -215,8 +215,10 @@ _file_hash() {
 _depends_check() {
   local \
     _pkg="${1}" \
+    _depend \
     _depends_string \
-    _depends=()
+    _depends=() \
+    _installed
   _depends_string="$( \
     package-info-get \
       "${_pkg}" \
@@ -241,10 +243,14 @@ _depends_check() {
     if [[ "${_installed}" == "" ]]; then
       _msg=(
         "Package '${_depend}'"
-	"not installed."
+        "not installed,"
+	"checking if available"
+	"locally or in default"
+	"repositories."
       )
-      _msg_warning \
+      _msg_info \
         "${_msg[*]}"
+      _available=""
     fi
   done
 }
