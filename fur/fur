@@ -467,6 +467,15 @@ _fur_git_get() {
       _msg_error \
         "${_msg[*]}" \
         1 )
+  done
+  for _pkg in "${_pkgs[@]}"; do
+    _pkg_file="${_repo_dir}/$( \
+      basename \
+        "${_pkg}")"
+    _pkgname="$( \
+      package-info-get \
+        "${_pkg_file}" \
+        "pkgname")"
     _package_retrieved \
       "${_pkgname}"
     tree \
@@ -474,7 +483,7 @@ _fur_git_get() {
     _depends_check \
       "${_repo_dir}/$( \
         basename \
-	  "${_pkg}")"
+          "${_pkg}")"
   done
   cd \
     "${_oldpwd}"
