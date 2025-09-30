@@ -245,12 +245,26 @@ _depends_check() {
         "Package '${_depend}'"
         "not installed,"
 	"checking if available"
-	"locally or in default"
+	"in default"
 	"repositories."
       )
       _msg_info \
         "${_msg[*]}"
-      _available=""
+      _available="$( \
+        pacman \
+          -Si \
+          "${_depend}" \
+	  2>/dev/null || \
+	true)"
+       if [[ "${_available}" != "" ]]; then
+         _msg=(
+           "The package is available,"
+	   "installing it."
+         )
+         pacman \
+           -S \
+	   "${_depend}"
+       fi 
     fi
   done
 }
