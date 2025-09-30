@@ -51,6 +51,7 @@ _global_variables() {
   install_date=""
   package_manager=""
   dependencies_check=""
+  dependencies_resolve=""
   installed_packages=()
   download_only=""
   target_platform=""
@@ -58,6 +59,7 @@ _global_variables() {
   repo_dir=""
   sig_dir=""
   target_mirror=""
+  repo_name=""
   mirror_type=""
   output_dir=""
   color=""
@@ -514,9 +516,11 @@ _fur() {
     _repo_dir="${5}" \
     _sig_dir="${6}" \
     _target_mirror="${7}" \
-    _mirror_type="${8}" \
-    _dependencies_check="${9}" \
-    _output_dir="${10}" \
+    _repo_name="${8}" \
+    _mirror_type="${9}" \
+    _dependencies_check="${10}" \
+    _dependencies_resolve="${11}" \
+    _output_dir="${12}" \
     _packages=() \
     _packages_to_retrieve=() \
     _depends_retrieved=() \
@@ -528,7 +532,7 @@ _fur() {
     _url \
     _msg=()
   shift \
-    10
+    12
   _packages=(
     "$@"
   )
@@ -714,12 +718,20 @@ _set_overrides() {
     "mirror" \
     "github"
   _set_override \
+    "repo" \
+    "name" \
+    "fur"
+  _set_override \
     "mirror" \
     "type" \
     "tree"
   _set_override \
     "dependencies" \
     "check" \
+    "y"
+  _set_override \
+    "dependencies" \
+    "resolve" \
     "y"
   _output_dir_auto_detect
   if [[ "${installed_packages[*]}" == "" ]]; then
@@ -795,9 +807,13 @@ Usage:
                             Default: ${target_mirror}
      -t <mirror_type>       It can be 'tree'.
                             Default: ${mirror_type}
+     -l <repo_name>         Repository name on the mirror.
+                            Default: ${repo_name}
      -D <y/n>               Whether to check for package
                             dependencies.
                             Default: ${dependencies_check}
+     -R <y/n>               Resolve missing dependencies.
+                            Default: ${dependencies_resolve}
      -o <output_dir>        Output directory.
                             Default: ${output_dir}
 
@@ -830,8 +846,10 @@ while \
     w) override_repo_dir="${OPTARG}" ;;
     K) override_sig_dir="${OPTARG}" ;;
     m) override_target_mirror="${OPTARG}" ;;
+    l) override_repo_name="${OPTARG}" ;;
     t) override_mirror_type="${OPTARG}" ;;
     D) override_dependencies_check="${OPTARG}" ;;
+    R) override_dependencies_resolve="${OPTARG}" ;;
     o) override_output_dir="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
@@ -868,8 +886,10 @@ app_opts=(
   "${repo_dir}"
   "${sig_dir}"
   "${target_mirror}"
+  "${repo_name}"
   "${mirror_type}"
   "${dependencies_check}"
+  "${dependencies_resolve}"
   "${output_dir}"
   "${installed_packages[@]}"
 )

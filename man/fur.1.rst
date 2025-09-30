@@ -78,8 +78,10 @@ Options
 -m mirror               Fur mirror, can be 'github' or
                         'gitlab'.
 -t mirror_type          It can be 'tree'.
+-l repo_name            Repository name on the mirror.
 -D y\/n                 Whether to skip dependencies
                         check.
+-R y\/n                 Resolve missing dependencies.
 -o output_dir           Output directory for the packages.
 
 -h                      Display help.
