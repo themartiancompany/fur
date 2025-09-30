@@ -308,9 +308,9 @@ _fur_git_get() {
   _msg_info \
     "${_msg[*]}"
   for _pkg in "${_pkgs[@]}"; do
-    # pacman \
-    #   -U \
-    #   "${_pkg}"
+    package-info-get \
+      "${_pkg}" \
+      "depends"
     mv \
       "${_pkg}" \
       "${_repo_dir}" || ( \
@@ -625,8 +625,8 @@ Usage:
                             Default: ${target_mirror}
      -t <mirror_type>       It can be 'tree'.
                             Default: ${mirror_type}
-     -D <y/n>               Whether to skip dependencies
-                            check.
+     -D <y/n>               Whether to check for package
+                            dependencies.
                             Default: ${dependencies_check}
      -o <output_dir>        Output directory.
                             Default: ${output_dir}
