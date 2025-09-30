@@ -212,6 +212,43 @@ _file_hash() {
       '{print $1}'
 }
 
+_depends_check() {
+  local \
+    _pkg="${1}" \
+    _depends_string \
+    _depends=()
+  _depends_string="$( \
+    package-info-get \
+      "${_pkg}" \
+      "depend")"
+  IFS=$'\n' \
+  read \
+    -r \
+    -d \
+      '' \
+    -a \
+    _depends <<< \
+    "$_depends_string" || \
+  true
+  for _depend in "${_depends[@]}"; do
+    echo \
+      "Checking '${_depend}'."
+    _installed="$( \
+      pacman \
+        -Q \
+        "${_depend}" 2>/dev/null || \
+      true)"
+    if [[ "${_installed}" == "" ]]; then
+      _msg=(
+        "Package '${_depend}'"
+	"not installed."
+      )
+      _msg_warning \
+        "${_msg[*]}"
+    fi
+  done
+}
+
 _fur_git_get() {
   local \
     _pkg="${1}" \
@@ -308,9 +345,8 @@ _fur_git_get() {
   _msg_info \
     "${_msg[*]}"
   for _pkg in "${_pkgs[@]}"; do
-    package-info-get \
-      "${_pkg}" \
-      "depends"
+    _depends_check \
+      "${_pkg}"
     mv \
       "${_pkg}" \
       "${_repo_dir}" || ( \
