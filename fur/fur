@@ -73,8 +73,13 @@ _pkgs_get() {
     _pkgs < \
     <(find \
         "${_dir}" \
-        -iwholename \
-          "*/${_platform}/*/*.pkg.*" \
+        \( \
+          -iwholename \
+            "*/${_platform}/*/*.pkg.*" \
+          -a \
+	! -iwholename \
+            "*/${_platform}/*/*.pkg.*.sig" \
+	\) \
         -type \
           "f" \
         -print0 || \
@@ -445,7 +450,13 @@ _fur_git_get() {
     _pkgname="$( \
       package-info-get \
         "${_pkg}" \
-	"pkgname")"
+        "pkgname")"
+    _msg=(
+      "Found and moving package '${_pkg}'"
+      "into '${_repo_dir}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
     mv \
       "${_pkg}" \
       "${_repo_dir}" || ( \
@@ -458,6 +469,8 @@ _fur_git_get() {
         1 )
     _package_retrieved \
       "${_pkgname}"
+    tree \
+      "${_repo_dir}"
     _depends_check \
       "${_repo_dir}/$( \
         basename \
