@@ -278,6 +278,9 @@ _depends_check() {
            )
            _msg_info \
              "${_msg[*]}"
+           _packages_to_retrieve+=(
+             "${_depend}"
+           )
            _fur_git_get \
              "${_depend}" \
              "${_target_mirror}" \
@@ -286,6 +289,23 @@ _depends_check() {
        fi 
     fi
   done
+}
+
+_package_retrieved() {
+  local \
+    _pkg="${1}" \
+    _array=() \
+    _remaining
+  for _remaining in "${_packages_to_retrieve[@]}"; do
+    if [[ "${_remaining}" != "${_pkg}" ]]; then
+      _array+=(
+        "${_remaining}"
+      )
+    fi
+  done
+  _packages_to_retrieve=(
+    "${_array[@]}"
+  )
 }
 
 _fur_git_get() {
@@ -305,11 +325,12 @@ _fur_git_get() {
       --quiet
     )
   fi
+  _msg=(
+    "Downloading '${_pkg}'."
+    "Remaining packages '${_packages_to_retrieve[@]}'"
+  )
   _msg_info \
     "${_msg[*]}"
-  _msg=(
-    "Downloading ${_pkg}."
-  )
   _clone_opts+=(
     --single-branch
     --depth=1
@@ -414,6 +435,8 @@ _fur_git_get() {
       _msg_error \
         "${_msg[*]}" \
         1 )
+    _package_retrieved \
+      "${_pkg}"
     _depends_check \
       "${_repo_dir}/$( \
         basename \
