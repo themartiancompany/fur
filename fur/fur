@@ -77,13 +77,21 @@ _pkgs_get() {
           -iwholename \
             "*/${_platform}/*/*.pkg.*" \
           -a \
-	! -iwholename \
+        ! -iwholename \
             "*/${_platform}/*/*.pkg.*.sig" \
 	\) \
         -type \
           "f" \
         -print0 || \
       true)
+  _array_set \
+    "_pkgs" \
+    "_pkgs_set"
+  echo \
+    "${_pkgs_set[@]}"
+  _pkgs=(
+    "${_pkgs_set[@]}"
+  )
 }
 
 _sigs_get() {
@@ -277,6 +285,13 @@ _depends_check() {
                "${_depend}" \
                "${_target_mirror}" \
                "${_repo_dir}"
+           elif [[ " ${_depends_retrieved[*]} " == *" ${_depend} "* ]]; then
+             _msg=(
+               "Package '${_depend}'"
+               "already retrieved."
+             )
+             _msg_info \
+               "${_msg[*]}"
            fi
          fi 
       elif [[ "${_installed}" != "" ]]; then
@@ -327,6 +342,7 @@ _fur_git_get() {
     _clone_opts=() \
     _url \
     _pkgs=() \
+    _pkgs_set=() \
     _oldpwd \
     _dir \
     _pkgname \
@@ -383,11 +399,11 @@ _fur_git_get() {
     "${_msg[*]}"
   for _dir in "fur/"*; do
     if [[ ! -d "${_dir}" || \
-	  "$(basename \
-	       "${_dir}")" != "${_platform}" ]]; then
+          "$(basename \
+            "${_dir}")" != "${_platform}" ]]; then
       rm \
         -rf \
-	"${_dir}"
+        "${_dir}"
     fi
   done
   _sigs_get \
@@ -447,6 +463,7 @@ _fur_git_get() {
     _msg_info \
       "${_msg[*]}"
     mv \
+      -v \
       "${_pkg}" \
       "${_repo_dir}" || ( \
       _msg=(
@@ -469,10 +486,10 @@ _fur_git_get() {
       "${_pkgname}"
     tree \
       "${_repo_dir}"
-    _depends_check \
-      "${_repo_dir}/$( \
-        basename \
-          "${_pkg}")"
+    depends_check \
+     "${_repo_dir}/$( \
+       basename \
+         "${_pkg}")"
   done
   cd \
     "${_oldpwd}"
