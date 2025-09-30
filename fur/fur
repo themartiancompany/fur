@@ -84,14 +84,14 @@ _pkgs_get() {
           "f" \
         -print0 || \
       true)
-  _array_set \
-    "_pkgs" \
-    "_pkgs_set"
-  echo \
-    "${_pkgs_set[@]}"
-  _pkgs=(
-    "${_pkgs_set[@]}"
-  )
+  #_array_set \
+  #  "_pkgs" \
+  #  "_pkgs_set"
+  #echo \
+  #  "${_pkgs_set[@]}"
+  #_pkgs=(
+  #  "${_pkgs_set[@]}"
+  #)
 }
 
 _sigs_get() {
@@ -486,7 +486,7 @@ _fur_git_get() {
       "${_pkgname}"
     tree \
       "${_repo_dir}"
-    depends_check \
+    _depends_check \
      "${_repo_dir}/$( \
        basename \
          "${_pkg}")"
