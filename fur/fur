@@ -278,9 +278,6 @@ _depends_check() {
            )
            _msg_info \
              "${_msg[*]}"
-           _depends_retrieved+=(
-             "${_depend}"
-           )
            _fur_git_get \
              "${_depend}" \
              "${_target_mirror}" \
@@ -344,6 +341,9 @@ _fur_git_get() {
     clone \
       "${_git_opts[@]}" \
       "${_url}"
+  _depends_retrieved+=(
+    "${_pkg}"
+  )
   _msg=(
     "Removing extra platforms."
   )
