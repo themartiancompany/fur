@@ -316,17 +316,24 @@ _package_retrieved() {
       _array+=(
         "${_remaining}"
       )
+    elif [[ "${_remaining}" == "${_pkgname}" ]]; then
+      _msg=(
+        "Package '${_pkg}' retrieved."
+      )
+      _msg_info \
+        "${_msg[*]}"
     fi
   done
   _packages_to_retrieve=(
     "${_array[@]}"
   )
-  _msg=(
-    "Package '${_pkg}' retrieved."
-    "Left '${_packages_to_retrieve[@]}'."
-  )
-  _msg_info \
-    "${_msg[*]}"
+  if [[ "${_packages_to_retrieve[*]}" != "" ]]; then
+    _msg=(
+      "Left '${_packages_to_retrieve[@]}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
+  fi
 }
 
 _fur_git_get() {
