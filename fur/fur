@@ -770,10 +770,12 @@ _show_config() {
   _msg_info "          Package manager:   ${package_manager}"
   _msg_info "              Mirror type:   ${mirror_type}"
   _msg_info "       Dependencies check:   ${dependencies_check}"
+  _msg_info "   Dependencies resolving:   ${dependencies_resolve}"
   _msg_info "            Download only:   ${download_only}"
   _msg_info "           Repo directory:   ${repo_dir}"
   _msg_info "     Signatures directory:   ${sig_dir}"
   _msg_info "            Target mirror:   ${target_mirror}"
+  _msg_info "          Repository name:   ${repo_name}"
   _msg_info "         Output directory:   ${output_dir}"
   _msg_info " To be installed packages:   ${installed_packages[*]}"
 }
@@ -819,6 +821,8 @@ Usage:
                             Default: ${target_mirror}
      -t <mirror_type>       It can be 'tree'.
                             Default: ${mirror_type}
+     -L <git_protocol>      Git protocol. It can be 'http' or 'ssh'.
+                            Default: ${git_protocol}
      -l <repo_name>         Repository name on the mirror.
                             Default: ${repo_name}
      -D <y/n>               Whether to check for package
@@ -847,7 +851,7 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'P:A:p:dw:K:m:l:t:D:R:o:cvh?' \
+    'P:A:p:dw:K:m:l:t:L:D:R:o:cvh?' \
     arg; do
   case \
     "${arg}" in

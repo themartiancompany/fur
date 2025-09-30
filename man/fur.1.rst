@@ -26,9 +26,9 @@ fur
 =================
 
 --------------------------------------------------------------
-Ethereum Virtual Machine-compatible Contract Caller
+Fallback User Repository
 --------------------------------------------------------------
-:Version: evm-contract-call |version|
+:Version: fur |version|
 :Manual section: 1
 
 Synopsis
@@ -67,18 +67,19 @@ Options
 
 -p package_manager      Package manager.
 -d                      Download only (noinstall).
--w repo_dir             Directory containing the fur tree.
+-w repo-dir             Directory containing the fur tree.
                         To be set when download only is true,
                         otherwise is temporary.
--K sig_dir              Signatures directory.
+-K sig-dir              Signatures directory.
 -P platform             Platform for which to retrieve packages,
                         can be 'arch' or 'termux'.
 -A architecture         Architecture for which to retrieve packages,
                         can be 'any', 'arm' or 'x86_64'.
 -m mirror               Fur mirror, can be 'github' or
                         'gitlab'.
--t mirror_type          It can be 'tree'.
--l repo_name            Repository name on the mirror.
+-t mirror-type          It can be 'tree'.
+-L git-protocol            Repository name on the mirror.
+-l repo-name            Repository name on the mirror.
 -D y\/n                 Whether to skip dependencies
                         check.
 -R y\/n                 Resolve missing dependencies.
