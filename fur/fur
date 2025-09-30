@@ -494,7 +494,8 @@ _package_manager_auto_detect() {
   _package_manager="$( \
     command \
       -v \
-      "inteppacman")"
+      "inteppacman" || \
+    true)"
   if [[ "${_package_manager}" == "" ]]; then
     _package_manager="pacman"
   fi
@@ -664,9 +665,10 @@ while \
     o) override_output_dir="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
-    h|?) _set_overrides && \
-         _usage \
-           0 ;;
+    h|?)
+      _set_overrides && \
+      _usage \
+        0 ;;
     *)
     _msg_error \
       "Invalid argument '${arg}'." \
