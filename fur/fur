@@ -205,7 +205,7 @@ _mirror_get() {
   elif [[ "${_protocol}" == "ssh" ]]; then
     _location="${_domain}:"
   fi
-  _url="${_location}${_ns}/fur"
+  _url="${_location}${_ns}/${_repo_name}"
   echo \
     "${_url}"
 }
@@ -219,13 +219,153 @@ _file_hash() {
       '{print $1}'
 }
 
+_depend_available_get() {
+  local \
+    _depend="${1}" \
+    _msg=()
+  _msg=(
+    "Package '${_depend}'"
+    "not installed,"
+    "checking if available"
+    "in default"
+    "repositories."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _available="$( \
+    pacman \
+      -Si \
+      "${_depend}" \
+      2>/dev/null || \
+    true)"
+}
+
+_install_pkg_repo() {
+  local \
+    _pkg="${1}" \
+    _msg=() \
+    _cmd=()
+    _pkgmgr_depends_opts=()
+  _msg=(
+    "The package is available"
+    "in default binary repositories,"
+    "installing it."
+  )
+  _pkgmgr_depends_opts+=(
+    $(_pkgmgr_depends_opts_get \
+        "${_pkgmgr}")
+  )
+  _cmd=(
+    "${_pkgmgr}"
+      "${_pkgmgr_depends_opts[@]}"
+      "${_pkg}"
+  )
+  "${_cmd[@]}"
+}
+
+_pkg_installed_get() {
+  local \
+    _pkg="${1}" \
+    _msg=()
+  msg=(
+    "Checking unretrieved"
+    "depend '${_depend}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _installed="$( \
+    pacman \
+      -Q \
+      "${_depend}" 2>/dev/null || \
+    true)"
+}
+
+_depend_retrieved_get() {
+  local \
+    _depend="${1}"
+  if [[ " ${_depends_retrieved[*]} " != *" ${_depend} "* ]]; then
+    _depend_retrieved="false"
+  else
+    _depend_retrieved="true"
+  fi
+}
+
+_depend_resolve() {
+  local \
+    _depend="${1}" \
+    _available \
+    _depend_retrieved \
+    _installed \
+    _msg=()
+  _depend_retrieved_get \
+    "${_depend}"
+  if [[ "${_depend_retrieved}" == "true" ]]; then
+    _msg=(
+      "Dependency '${_depend}' already retrieved."
+    )
+    _msg_info \
+      "${_msg[*]}"
+  elif [[ "${_depend_retrieved}" == "false" ]]; then
+    _pkg_installed_get \
+      "${_depend}"
+    if [[ "${_installed}" == "" ]]; then
+      _depend_available_get \
+        "${_depend}"
+      if [[ "${_available}" != "" ]]; then
+        _install_pkg_repo \
+          "${_depend}"
+      elif [[ "${_available}" == "" ]]; then
+        if [[ " ${_depends_retrieved[*]} " != *" ${_depend} "* ]]; then
+          _msg=(
+            "Looking for unretrievable"
+            "binary package '${_depend}' on"
+            "the fur."
+          )
+          _msg_info \
+            "${_msg[*]}"
+          _packages_to_retrieve+=(
+            "${_depend}"
+          )
+          if [[ "${_mirror_type}" == "tree" ]]; then 
+            _fur_git_get \
+              "${_depend}" \
+              "${_target_mirror}" \
+              "${_repo_dir}"
+          elif [[ "${_mirror_type}" == "ci" ]]; then 
+            _fur_ci_get \
+              "${_depend}" \
+              "${_target_mirror}" \
+              "${_repo_dir}"
+          else
+            _msg=(
+              "Unknown mirror type"
+              "'${_mirror_type}'."
+            )
+            _msg_error \
+              "${_msg[*]}"
+          fi
+        elif [[ " ${_depends_retrieved[*]} " == *" ${_depend} "* ]]; then
+          _msg=(
+            "Package '${_depend}'"
+            "already retrieved."
+          )
+          _msg_info \
+            "${_msg[*]}"
+        fi
+      fi
+    elif [[ "${_installed}" != "" ]]; then
+      _package_retrieved \
+        "${_depend}"
+    fi
+  fi
+}
+
 _depends_check() {
   local \
     _pkg="${1}" \
     _depend \
     _depends_string \
-    _depends=() \
-    _installed
+    _depends=()
   _depends_string="$( \
     package-info-get \
       "${_pkg}" \
@@ -240,73 +380,8 @@ _depends_check() {
     "$_depends_string" || \
   true
   for _depend in "${_depends[@]}"; do
-    if [[ " ${_depends_retrieved[*]} " != *" ${_depend} "* ]]; then
-      msg=(
-        "Checking unretrieved"
-        "depend '${_depend}'."
-      )
-      _msg_info \
-        "${_msg[*]}"
-      _installed="$( \
-        pacman \
-          -Q \
-          "${_depend}" 2>/dev/null || \
-        true)"
-      if [[ "${_installed}" == "" ]]; then
-        _msg=(
-          "Package '${_depend}'"
-          "not installed,"
-          "checking if available"
-          "in default"
-          "repositories."
-        )
-        _msg_info \
-          "${_msg[*]}"
-        _available="$( \
-          pacman \
-            -Si \
-            "${_depend}" \
-            2>/dev/null || \
-          true)"
-         if [[ "${_available}" != "" ]]; then
-           _msg=(
-             "The package is available"
-             "in default binary repositories,"
-             "installing it."
-           )
-           pacman \
-             -S \
-             "${_depend}"
-         elif [[ "${_available}" == "" ]]; then
-           if [[ " ${_depends_retrieved[*]} " != *" ${_depend} "* ]]; then
-             _msg=(
-               "Looking for unretrievable"
-	       "binary package '${_depend}' on"
-               "the fur."
-             )
-             _msg_info \
-               "${_msg[*]}"
-             _packages_to_retrieve+=(
-               "${_depend}"
-             )
-             _fur_git_get \
-               "${_depend}" \
-               "${_target_mirror}" \
-               "${_repo_dir}"
-           elif [[ " ${_depends_retrieved[*]} " == *" ${_depend} "* ]]; then
-             _msg=(
-               "Package '${_depend}'"
-               "already retrieved."
-             )
-             _msg_info \
-               "${_msg[*]}"
-           fi
-         fi 
-      elif [[ "${_installed}" != "" ]]; then
-        _package_retrieved \
-          "${_depend}"
-      fi
-    fi
+    _depend_resolve \
+      "${_depend}"
   done
 }
 
@@ -397,7 +472,8 @@ _fur_git_get() {
   git \
     clone \
       "${_git_opts[@]}" \
-      "${_url}"
+      "${_url}" \
+      "fur"
   _depends_retrieved+=(
     "${_pkg}"
   )
@@ -507,10 +583,32 @@ _fur_git_get() {
     "${_repo_dir}/fur"
 }
 
+_fur_ci_get() {
+  local \
+    _pkg="${1}" \
+    _target_mirror="${2}" \
+    _repo_dir="${3}"
+  if [[ "${_target_mirror}" == "github" ]]; then
+    _fur_github_release_get \
+      "${_pkg}" \
+      "${_repo_dir}"
+  fi
+}
+
 _fur_github_release_get() {
   local \
-    _repo_dir="${1}" \
+    _pkg="${1}" \
+    _repo_dir="${2}" \
     _msg=()
+  _msg=(
+    "Retrieving binary package"
+    "'${_pkg}' from Gur"
+    "releases."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  exit \
+    1
 }
 
 # $@: packages
@@ -587,6 +685,41 @@ _fur() {
   fi
   cd \
     "${OLDPWD}"
+}
+
+_pkgmgr_depends_opts_get() {
+  local \
+    _pkgmgr="${1}" \
+    _name \
+    _opts=()
+  _name="$( \
+    basename \
+      "${_pkgmgr}")"
+  if [[ "${_name}" == "inteppacman" ]]; then
+    if [[ "${quiet}" == "n" ]]; then
+      _opts+=(
+        -v
+      )
+    fi
+    _opts+=(
+      --
+    )
+  fi
+  if [[ "${_dependencies_check}" == "y" ]]; then
+    _opts+=(
+      -S
+    )
+  elif [[ "${_dependencies_check}" == "n" ]]; then
+    _opts+=(
+      -Sdd
+    )
+  fi
+  _opts+=(
+    --overwrite="*"
+    --noconfirm
+  )
+  echo \
+    "${_opts[@]}"
 }
 
 _pkgmgr_opts_get() {
