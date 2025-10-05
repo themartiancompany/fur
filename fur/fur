@@ -59,6 +59,7 @@ _global_variables() {
   repo_dir=""
   sig_dir=""
   target_mirror=""
+  target_namespace=""
   repo_name=""
   mirror_type=""
   git_protocol=""
@@ -195,17 +196,16 @@ _install_pkgs() {
 _mirror_get() {
   local \
     _domain="${1}" \
-    _protocol="${2}" \
+    _namespace="${2}"
+    _protocol="${3}" \
     _location \
-    _ns \
     _url
-  _ns="themartiancompany"
   if [[ "${_protocol}" == "http" ]]; then
     _location="https://${_domain}.com/"
   elif [[ "${_protocol}" == "ssh" ]]; then
     _location="${_domain}:"
   fi
-  _url="${_location}${_ns}/${_repo_name}"
+  _url="${_location}${_namespace}/${_repo_name}"
   echo \
     "${_url}"
 }
@@ -452,6 +452,7 @@ _fur_git_get() {
   _url="$( \
     _mirror_get \
       "${_mirror}" \
+      "${_target_namespace}" \
       "${_git_protocol}")"
   _oldpwd="$( \
     pwd)"
@@ -607,6 +608,9 @@ _fur_github_release_get() {
   )
   _msg_info \
     "${_msg[*]}"
+  gh-dl \
+    ""
+
   exit \
     1
 }
@@ -621,12 +625,13 @@ _fur() {
     _repo_dir="${5}" \
     _sig_dir="${6}" \
     _target_mirror="${7}" \
-    _repo_name="${8}" \
-    _mirror_type="${9}" \
-    _git_protocol="${10}" \
-    _dependencies_check="${11}" \
-    _dependencies_resolve="${12}" \
-    _output_dir="${13}" \
+    _target_namespace="${8}" \
+    _repo_name="${9}" \
+    _mirror_type="${10}" \
+    _git_protocol="${11}" \
+    _dependencies_check="${12}" \
+    _dependencies_resolve="${13}" \
+    _output_dir="${14}" \
     _packages=() \
     _packages_to_retrieve=() \
     _depends_retrieved=() \
@@ -638,7 +643,7 @@ _fur() {
     _url \
     _msg=()
   shift \
-    13
+    14
   _packages=(
     "$@"
   )
@@ -859,6 +864,10 @@ _set_overrides() {
     "mirror" \
     "github"
   _set_override \
+    "target" \
+    "namespace" \
+    "themartiancompany"
+  _set_override \
     "repo" \
     "name" \
     "fur"
@@ -908,6 +917,7 @@ _show_config() {
   _msg_info "           Repo directory:   ${repo_dir}"
   _msg_info "     Signatures directory:   ${sig_dir}"
   _msg_info "            Target mirror:   ${target_mirror}"
+  _msg_info "         Target namespace:   ${target_namespace}"
   _msg_info "          Repository name:   ${repo_name}"
   _msg_info "         Output directory:   ${output_dir}"
   _msg_info " To be installed packages:   ${installed_packages[*]}"
@@ -958,6 +968,8 @@ Usage:
                             Default: ${git_protocol}
      -l <repo_name>         Repository name on the mirror.
                             Default: ${repo_name}
+     -n <namespace>         Repository namespace on the mirror.
+                            Default: ${target_namespace}
      -D <y/n>               Whether to check for package
                             dependencies.
                             Default: ${dependencies_check}
@@ -984,7 +996,7 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'P:A:p:dw:K:m:l:t:L:D:R:o:cvh?' \
+    'P:A:p:dw:K:m:l:n:t:L:D:R:o:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -996,6 +1008,7 @@ while \
     K) override_sig_dir="${OPTARG}" ;;
     m) override_target_mirror="${OPTARG}" ;;
     l) override_repo_name="${OPTARG}" ;;
+    n) override_target_namespace="${OPTARG}" ;;
     t) override_mirror_type="${OPTARG}" ;;
     L) override_git_protocol="${OPTARG}" ;;
     D) override_dependencies_check="${OPTARG}" ;;
@@ -1036,6 +1049,7 @@ app_opts=(
   "${repo_dir}"
   "${sig_dir}"
   "${target_mirror}"
+  "${target_namespace}"
   "${repo_name}"
   "${mirror_type}"
   "${git_protocol}"
@@ -1046,3 +1060,5 @@ app_opts=(
 )
 _fur \
   "${app_opts[@]}"
+
+# vim:set sw=2 sts=-1 et:
