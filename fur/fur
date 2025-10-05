@@ -196,7 +196,7 @@ _install_pkgs() {
 _mirror_get() {
   local \
     _domain="${1}" \
-    _namespace="${2}"
+    _namespace="${2}" \
     _protocol="${3}" \
     _location \
     _url
