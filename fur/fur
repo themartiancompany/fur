@@ -44,6 +44,13 @@ _requirements() {
   _check_cmd \
     'find' \
     'findutils'
+  _check_cmd \
+    'pacman'
+}
+
+_requirements_github_ci() {
+  _check_cmd \
+    "gh-dl"
 }
 
 # shellcheck disable=SC2034
@@ -590,6 +597,7 @@ _fur_ci_get() {
     _target_mirror="${2}" \
     _repo_dir="${3}"
   if [[ "${_target_mirror}" == "github" ]]; then
+    _requirements_github_ci
     _fur_github_release_get \
       "${_pkg}" \
       "${_repo_dir}"
@@ -610,9 +618,6 @@ _fur_github_release_get() {
     "${_msg[*]}"
   gh-dl \
     ""
-
-  exit \
-    1
 }
 
 # $@: packages
