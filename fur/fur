@@ -46,11 +46,19 @@ _requirements() {
     'findutils'
   _check_cmd \
     'pacman'
+  _check_cmd \
+    "package-info-get" \
+    "reallymakepkg"
 }
 
 _requirements_github_ci() {
   _check_cmd \
     "gh-dl"
+}
+
+_requirements_gitlab_ci() {
+  _check_cmd \
+    "gl-dl"
 }
 
 # shellcheck disable=SC2034
@@ -297,6 +305,40 @@ _depend_retrieved_get() {
   fi
 }
 
+_depend_local_get() {
+  local \
+    _depend="${1}" \
+    _pkg_file \
+    _pkgname \
+    _pkgs=()
+  for _pkg_file in \
+    "${_repo_dir}/"*".pkg.tar.xz"; do
+    _pkgname="$( \
+      basename \
+        "${_pkg_file}" | \
+        rev | \
+        cut \
+          -d \
+            "-" \
+          -f \
+            4- | \
+          rev)"
+    _pkgs+=(
+      "${_pkgname}"
+    )
+  done
+  if [[ " ${_pkgs[*]} " == *" ${_depend} "* ]]; then
+    _msg=(
+      "Dependency '${_depend}' already retrieved."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    _package_retrieved \
+      "${_depend}"
+    _depend_retrieved="true"
+  fi
+}
+
 _depend_resolve() {
   local \
     _depend="${1}" \
@@ -322,39 +364,36 @@ _depend_resolve() {
         _install_pkg_repo \
           "${_depend}"
       elif [[ "${_available}" == "" ]]; then
-        if [[ " ${_depends_retrieved[*]} " != *" ${_depend} "* ]]; then
-          _msg=(
-            "Looking for unretrievable"
-            "binary package '${_depend}' on"
-            "the fur."
-          )
-          _msg_info \
-            "${_msg[*]}"
-          _packages_to_retrieve+=(
-            "${_depend}"
-          )
-          if [[ "${_mirror_type}" == "tree" ]]; then 
-            _fur_git_get \
-              "${_depend}" \
-              "${_target_mirror}" \
-              "${_repo_dir}"
-          elif [[ "${_mirror_type}" == "ci" ]]; then 
-            _fur_ci_get \
-              "${_depend}" \
-              "${_target_mirror}" \
-              "${_repo_dir}"
-          else
+        _depend_local_get \
+          "${_depend}"
+        if [[ "${_depend_retrieved}" == "false" ]]; then
+          if [[ " ${_depends_retrieved[*]} " != *" ${_depend} "* ]]; then
             _msg=(
-              "Unknown mirror type"
-              "'${_mirror_type}'."
+              "Looking for unretrievable"
+              "binary package '${_depend}' on"
+              "the fur."
             )
-            _msg_error \
+            _msg_info \
+              "${_msg[*]}"
+            _packages_to_retrieve+=(
+              "${_depend}"
+            )
+            "_fur_${_mirror_type}_get" \
+              "${_depend}" \
+              "${_target_mirror}" \
+              "${_repo_dir}"
+          elif [[ " ${_depends_retrieved[*]} " == *" ${_depend} "* ]]; then
+            _msg=(
+              "Package '${_depend}'"
+              "already retrieved."
+            )
+            _msg_info \
               "${_msg[*]}"
           fi
-        elif [[ " ${_depends_retrieved[*]} " == *" ${_depend} "* ]]; then
+        elif [[ "${_depend_retrieved}" == "true" ]]; then
           _msg=(
-            "Package '${_depend}'"
-            "already retrieved."
+            "Depend '${_depend}'"
+            "retrieved already."
           )
           _msg_info \
             "${_msg[*]}"
@@ -423,7 +462,7 @@ _package_retrieved() {
   fi
 }
 
-_fur_git_get() {
+_fur_tree_get() {
   local \
     _pkg="${1}" \
     _mirror="${2}" \
@@ -601,6 +640,11 @@ _fur_ci_get() {
     _fur_github_release_get \
       "${_pkg}" \
       "${_repo_dir}"
+  elif [[ "${_target_mirror}" == "gitlab" ]]; then
+    _requirements_gitlab_ci
+    _fur_gitlab_release_get \
+      "${_pkg}" \
+      "${_repo_dir}"
   fi
 }
 
@@ -611,13 +655,46 @@ _fur_github_release_get() {
     _msg=()
   _msg=(
     "Retrieving binary package"
+    "'${_pkg}' from Github Ur"
+    "mirror releases."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  exit \
+    1
+  # gh-dl \
+  #   ""
+}
+
+_fur_gitlab_release_get() {
+  local \
+    _pkg="${1}" \
+    _repo_dir="${2}" \
+    _msg=() \
+    _old_pwd \
+    _gur_opts=()
+  if [[ "${quiet}" == "n" ]]; then
+    _gur_opts+=(
+      -v
+    )
+  fi
+  _old_pwd="${PWD}"
+  _msg=(
+    "Retrieving binary package"
     "'${_pkg}' from Gur"
     "releases."
   )
   _msg_info \
     "${_msg[*]}"
-  gh-dl \
-    ""
+  cd \
+    "${_repo_dir}"
+  gur \
+    "${_gur_opts[@]}" \
+    get \
+      artifacts \
+        "${_pkg}"
+  cd \
+    "${_old_pwd}"
 }
 
 # $@: packages
@@ -667,7 +744,7 @@ _fur() {
   while \
     (( "${#_packages_to_retrieve[@]}" > 0 )); do
     _package="${_packages_to_retrieve[0]}"
-    _fur_git_get \
+    "_fur_${_mirror_type}_get" \
       "${_package}" \
       "${_target_mirror}" \
       "${_repo_dir}"
