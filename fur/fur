@@ -79,6 +79,7 @@ _global_variables() {
   mirror_type=""
   git_protocol=""
   output_dir=""
+  cache_clean=""
   color=""
   quiet=""
 }
@@ -714,6 +715,7 @@ _fur() {
     _dependencies_check="${12}" \
     _dependencies_resolve="${13}" \
     _output_dir="${14}" \
+    _cache_clean="${15}" \
     _packages=() \
     _packages_to_retrieve=() \
     _depends_retrieved=() \
@@ -725,7 +727,7 @@ _fur() {
     _url \
     _msg=()
   shift \
-    14
+    15
   _packages=(
     "$@"
   )
@@ -769,6 +771,11 @@ _fur() {
     _install_pkgs \
       "${_repo_dir}" \
       "${_sig_dir}"
+  fi
+  if [[ "${_cache_clean}" == "y" ]]; then
+    rm \
+      -rf \
+      "${_repo_dir}/"*".pkg.tar."*
   fi
   cd \
     "${OLDPWD}"
@@ -944,11 +951,15 @@ _set_overrides() {
   _set_override \
     "target" \
     "mirror" \
-    "github"
+    "gitlab"
   _set_override \
     "target" \
     "namespace" \
     "themartiancompany"
+  _set_override \
+    "cache" \
+    "clean" \
+    "n"
   _set_override \
     "repo" \
     "name" \
@@ -996,6 +1007,7 @@ _show_config() {
   _msg_info "       Dependencies check:   ${dependencies_check}"
   _msg_info "   Dependencies resolving:   ${dependencies_resolve}"
   _msg_info "            Download only:   ${download_only}"
+  _msg_info "              Clean cache:   ${cache_clean}"
   _msg_info "           Repo directory:   ${repo_dir}"
   _msg_info "     Signatures directory:   ${sig_dir}"
   _msg_info "            Target mirror:   ${target_mirror}"
@@ -1059,6 +1071,9 @@ Usage:
                             Default: ${dependencies_resolve}
      -o <output_dir>        Output directory.
                             Default: ${output_dir}
+     -T                     Clean cache at the end
+                            of the operation.
+                            Default: ${cache_clean}
 
      -c                     Colors.
      -h                     This message.
@@ -1078,7 +1093,7 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'P:A:p:dw:K:m:l:n:t:L:D:R:o:cvh?' \
+    'P:A:p:dw:K:m:l:n:t:L:D:R:o:Tcvh?' \
     arg; do
   case \
     "${arg}" in
@@ -1096,6 +1111,7 @@ while \
     D) override_dependencies_check="${OPTARG}" ;;
     R) override_dependencies_resolve="${OPTARG}" ;;
     o) override_output_dir="${OPTARG}" ;;
+    T) override_cache_clean="y" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
     h|?)
@@ -1138,6 +1154,7 @@ app_opts=(
   "${dependencies_check}"
   "${dependencies_resolve}"
   "${output_dir}"
+  "${cache_clean}"
   "${installed_packages[@]}"
 )
 _fur \
