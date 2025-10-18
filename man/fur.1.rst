@@ -78,7 +78,7 @@ Options
 -m mirror               Fur mirror, can be 'github' or
                         'gitlab'.
 -t mirror-type          It can be 'tree'.
--L git-protocol            Repository name on the mirror.
+-L git-protocol         Repository name on the mirror.
 -l repo-name            Repository name on the mirror.
 -D y\/n                 Whether to skip dependencies
                         check.
