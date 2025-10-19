@@ -213,26 +213,63 @@ _token_private_get() {
   local \
     _token_dir \
     _token_namespace \
-    _token_private
+    _token_private \
+    _file \
+    _msg=() \
+    _tokens_namespace=()
   _token=""
-  _token_name=""
+  _token_name="optional"
   _token_dir="${HOME}/.config/${_domain}.com"
-  _token_private="${HOME}/.config/${_domain}.com/default.txt"
-  _token_namespace="${HOME}/.config/${_domain}.com/${_namespace}.txt"
-  _tokens_namespace=(
-    "${_token_dir}/${_namespace}-"*".txt"
-  )
-  if (( 0 < "${#_tokens_namespace}" )); then
+  _token_private="${_token_dir}/default.txt"
+  _token_namespace="${_token_dir}/${_namespace}.txt"
+  for _file in $(find "${_token_dir}/${_namespace}-"* 2>/dev/null || true); do
+    _tokens_namespace+=(
+      "${_file}"
+    )
+  done
+  if (( 0 < "${#_tokens_namespace[@]}" )); then
+    _msg=(
+      "Found '${_namespace}' tokens."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    echo \
+      "${_tokens_namespace[0]}"
     _token_private="${_tokens_namespace[0]}"
-    _token_name="${_token_private#${_namespace}-}"
+    _token_name="$( \
+      basename \
+        "${_token_private}")"
+    _token_name="${_token_name#${_namespace}-}"
     _token_name="${_token_name%.txt}"
   elif [[ -e "${_token_namespace}" ]]; then
+    _msg=(
+      "Found default token for '${_namespace}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
     _token_private="${_token_namespace}"
+  elif [[ ! -e "${_token_namespace}" ]]; then
+    _msg=(
+      "Found no namespace tokens."
+    )
+    _msg_info \
+      "${_msg[*]}"
   fi
   if [[ -e "${_token_private}" ]]; then
+    _msg=(
+      "Selected '${_token_private}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
     _token="$( \
       cat \
         "${_token_private}")"
+  elif [[ -e "${_token_private}" ]]; then
+    _msg=(
+      "Found no private tokens."
+    )
+    _msg_info \
+      "${_msg[*]}"
   fi
 }
 
@@ -242,22 +279,34 @@ _mirror_get() {
     _namespace="${2}" \
     _protocol="${3}" \
     _location \
-    _url \
     _token \
     _token_name
   if [[ "${_protocol}" == "http" ]]; then
     _token_private_get
-    if [[ "${_token_name}" == "" ]]; then
+    if [[ "${_token}" == "" ]]; then
+      _msg=(
+        "Found no private token,"
+        "expecting the repository"
+        "to be public."
+      )
+      _msg_info \
+        "${_msg[*]}"
       _location="https://${_domain}.com/"
-    elif [[ "${_token_name}" != "" ]]; then
+    elif [[ "${_token}" != "" ]]; then
+      if [[ "${_token_name}" == "" ]]; then
+        _msg=(
+          "Setting dummy name"
+        )
+        _msg_info \
+          "${_msg[*]}"
+        _token_name="dummy"
+      fi
       _location="https://${_token_name}:${_token}@${_domain}.com/"
     fi
   elif [[ "${_protocol}" == "ssh" ]]; then
     _location="${_domain}:"
   fi
   _url="${_location}${_namespace}/${_repo_name}"
-  echo \
-    "${_url}"
 }
 
 _file_hash() {
@@ -530,11 +579,10 @@ _fur_tree_get() {
     "${_clone_opts[@]}"
     --branch="${_pkg}"
   )
-  _url="$( \
-    _mirror_get \
-      "${_mirror}" \
-      "${_target_namespace}" \
-      "${_git_protocol}")"
+  _mirror_get \
+    "${_mirror}" \
+    "${_target_namespace}" \
+    "${_git_protocol}"
   _oldpwd="$( \
     pwd)"
   cd \
