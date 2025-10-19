@@ -526,12 +526,12 @@ _depends_check() {
     _resolve_flag="false"
     _depend_target="${_depend}"
     if [[ "${_depend}" == *"<"* ]]; then
-      _depend_name="${_depend%*<}"
+      _depend_name="${_depend%<*}"
       _depend_pkgver="${_depend#${_depend_name}}"
       _resolve_flag="true"
       _depend_target="${_depend_name}"
     elif [[ "${_depend}" == *"="* ]]; then
-      _depend_name="${_depend%*=}"
+      _depend_name="${_depend%=*}"
       _depend_pkgver="${_depend#=${_depend_name}}"
       _resolve_flag="true"
       _depend_target="${_depend_name}"
