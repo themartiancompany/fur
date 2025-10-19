@@ -49,6 +49,8 @@ _requirements() {
   _check_cmd \
     "package-info-get" \
     "reallymakepkg"
+  _check_cmd \
+    "tree"
 }
 
 _requirements_github_ci() {
@@ -58,7 +60,7 @@ _requirements_github_ci() {
 
 _requirements_gitlab_ci() {
   _check_cmd \
-    "gl-dl"
+    "gur"
 }
 
 # shellcheck disable=SC2034

@@ -33,9 +33,15 @@ _BASH_FILES=\
 _CHECK_FILES=\
   $(wildcard $(_PROJECT)/*)
 
-_INSTALL_FILE=install -vDm644
-_INSTALL_DIR=install -vdm755
-_INSTALL_EXE=install -vDm755
+_INSTALL_FILE=\
+  install \
+    -vDm644
+_INSTALL_DIR=\
+  install \
+    -vdm755
+_INSTALL_EXE=\
+  install \
+  -vDm755
 
 all:
 
@@ -43,7 +49,10 @@ check: shellcheck
 
 shellcheck:
 
-	shellcheck -s bash $(_CHECK_FILES)
+	shellcheck \
+	  -s \
+	    "bash" \
+	  $(_CHECK_FILES)
 
 install: install-$(_PROJECT) install-doc install-man
 
