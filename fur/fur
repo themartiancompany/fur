@@ -496,8 +496,18 @@ _depends_check() {
   local \
     _pkg="${1}" \
     _depend \
+    _depend_name \
+    _depend_pkgver \
+    _depend_target \
     _depends_string \
-    _depends=()
+    _depends=() \
+    _msg=()
+  _msg=(
+    "Resolving dependencies for"
+    "'${_pkgname}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
   _depends_string="$( \
     package-info-get \
       "${_pkg}" \
@@ -512,8 +522,22 @@ _depends_check() {
     "$_depends_string" || \
   true
   for _depend in "${_depends[@]}"; do
+    if [[ "${_depend}" == *"<"* ]]; then
+      _depend_name="${_depend#<}"
+      _depend_pkgver="${_depend#${_depend_name}}"
+      _msg=(
+        "It is requested version"
+        "'${_depend_pkgver}' of"
+        "package '${_depend_name}'."
+        "Be aware the Fur doesn't"
+        "look for provides currently."
+      )
+      _depend_target="${_depend_name}"
+    else
+      _depend_target="${_depend}"
+    fi
     _depend_resolve \
-      "${_depend}"
+      "${_depend_target}"
   done
 }
 
@@ -703,10 +727,19 @@ _fur_tree_get() {
       "${_pkgname}"
     tree \
       "${_repo_dir}"
-    _depends_check \
-     "${_repo_dir}/$( \
-       basename \
-         "${_pkg}")"
+    if [[ "${_dependencies_resolve}" == "n" ]]; then
+      _msg=(
+        "Skipping dependencies resolving"
+        "for '${_pkgname}'."
+      )
+      _msg_info \
+        "${_msg[*]}"
+    elif [[ "${_dependencies_resolve}" == "y" ]]; then
+      _depends_check \
+       "${_repo_dir}/$( \
+         basename \
+           "${_pkg}")"
+    fi
   done
   cd \
     "${_oldpwd}"
