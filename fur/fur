@@ -501,7 +501,8 @@ _depends_check() {
     _depend_target \
     _depends_string \
     _depends=() \
-    _msg=()
+    _msg=() \
+    _resolve_flag
   _msg=(
     "Resolving dependencies for"
     "'${_pkgname}'."
@@ -522,9 +523,20 @@ _depends_check() {
     "$_depends_string" || \
   true
   for _depend in "${_depends[@]}"; do
+    _resolve_flag="false"
+    _depend_target="${_depend}"
     if [[ "${_depend}" == *"<"* ]]; then
-      _depend_name="${_depend#<}"
+      _depend_name="${_depend%*<}"
       _depend_pkgver="${_depend#${_depend_name}}"
+      _resolve_flag="true"
+      _depend_target="${_depend_name}"
+    elif [[ "${_depend}" == *"="* ]]; then
+      _depend_name="${_depend%*=}"
+      _depend_pkgver="${_depend#=${_depend_name}}"
+      _resolve_flag="true"
+      _depend_target="${_depend_name}"
+    fi
+    if [[ "${_resolve_flag}" == "true" ]]; then
       _msg=(
         "It is requested version"
         "'${_depend_pkgver}' of"
@@ -532,9 +544,8 @@ _depends_check() {
         "Be aware the Fur doesn't"
         "look for provides currently."
       )
-      _depend_target="${_depend_name}"
-    else
-      _depend_target="${_depend}"
+      _msg_info \
+        "${_msg[*]}"
     fi
     _depend_resolve \
       "${_depend_target}"
