@@ -209,15 +209,49 @@ _install_pkgs() {
   fi
 }
 
+_token_private_get() {
+  local \
+    _token_dir \
+    _token_namespace \
+    _token_private
+  _token=""
+  _token_name=""
+  _token_dir="${HOME}/.config/${_domain}.com"
+  _token_private="${HOME}/.config/${_domain}.com/default.txt"
+  _token_namespace="${HOME}/.config/${_domain}.com/${_namespace}.txt"
+  _tokens_namespace=(
+    "${_token_dir}/${_namespace}-"*".txt"
+  )
+  if (( 0 < "${#_tokens_namespace}" )); then
+    _token_private="${_tokens_namespace[0]}"
+    _token_name="${_token_private#${_namespace}-}"
+    _token_name="${_token_name%.txt}"
+  elif [[ -e "${_token_namespace}" ]]; then
+    _token_private="${_token_namespace}"
+  fi
+  if [[ -e "${_token_private}" ]]; then
+    _token="$( \
+      cat \
+        "${_token_private}")"
+  fi
+}
+
 _mirror_get() {
   local \
     _domain="${1}" \
     _namespace="${2}" \
     _protocol="${3}" \
     _location \
-    _url
+    _url \
+    _token \
+    _token_name
   if [[ "${_protocol}" == "http" ]]; then
-    _location="https://${_domain}.com/"
+    _token_private_get
+    if [[ "${_token_name}" == "" ]]; then
+      _location="https://${_domain}.com/"
+    elif [[ "${_token_name}" != "" ]]; then
+      _location="https://${_token_name}:${_token}@${_domain}.com/"
+    fi
   elif [[ "${_protocol}" == "ssh" ]]; then
     _location="${_domain}:"
   fi
@@ -679,6 +713,10 @@ _fur_gitlab_release_get() {
       -v
     )
   fi
+  _gur_opts+=(
+    -N
+      "${_target_namespace}"
+  )
   _old_pwd="${PWD}"
   _msg=(
     "Retrieving binary package"
@@ -692,7 +730,7 @@ _fur_gitlab_release_get() {
   gur \
     "${_gur_opts[@]}" \
     get \
-      artifacts \
+      release \
         "${_pkg}"
   cd \
     "${_old_pwd}"
