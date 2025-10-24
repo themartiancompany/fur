@@ -65,8 +65,6 @@ feel free to open a request in the issues section.
 Options
 =======
 
--p package_manager      Package manager.
-
 -w repo-dir             Directory containing the fur tree.
                         To be set when download only is true,
                         otherwise is temporary.
@@ -75,12 +73,19 @@ Options
 
 -d                      Download only (noinstall).
 
+-o output_dir           Output directory for the packages.
+
 -D <y/n>                Whether to skip dependencies check.
 
 -R <y/n>                Resolve missing dependencies.
 
+-T                      Clean cache at the end
+                        of the operation.
+
 Platform options
 =================
+
+-p package_manager      Package manager.
 
 -P platform             Platform for which to retrieve packages,
                         can be 'arch' or 'termux'.
@@ -89,12 +94,12 @@ Platform options
                         can be 'any', 'arm' or 'x86_64'.
 
 
--o output_dir           Output directory for the packages.
-
 Mirror options
 =================
 
 -l repo-name            Repository name on the mirror.
+
+-n namespace            Repository namespace on the mirror.
 
 -m mirror               Fur mirror, can be 'github' or
                         'gitlab'.

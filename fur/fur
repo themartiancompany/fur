@@ -1169,22 +1169,40 @@ Usage:
     [packages]
 
   options:
-     -p <package_manager>   Package manager.
-                            Default: ${package_manager}
-     -d                     Download only (noinstall).
-                            Default: ${download_only}
      -w <repo_dir>          Directory containing the fur tree.
                             To be set when download only is true,
                             otherwise is temporary.
                             Default: ${repo_dir}
+     -d                     Download only (noinstall).
+                            Default: ${download_only}
+     -o <output_dir>        Output directory.
+                            Default: ${output_dir}
      -K <sig_dir>           Signatures keys directory.
                             Default: ${sig_dir}
+     -D <y/n>               Whether to check for package
+                            dependencies.
+                            Default: ${dependencies_check}
+     -R <y/n>               Resolve missing dependencies.
+                            Default: ${dependencies_resolve}
+     -T                     Clean cache at the end
+                            of the operation.
+                            Default: ${cache_clean}
+
+  mirror options:
+     -p <package_manager>   Package manager.
+                            Default: ${package_manager}
      -P <platform>          Platform for which to retrieve packages,
                             can be 'arch' or 'termux'.
                             Default: ${target_platform}
      -A <architecture>      Architecture for which to retrieve packages,
                             can be 'any', 'arm' or 'x86_64'.
                             Default: ${target_arch}
+
+  mirror options:
+     -l <repo_name>         Repository name on the mirror.
+                            Default: ${repo_name}
+     -n <namespace>         Repository namespace on the mirror.
+                            Default: ${target_namespace}
      -m <mirror>            Fur mirror, can be 'github' or
                             'gitlab'.
                             Default: ${target_mirror}
@@ -1192,21 +1210,8 @@ Usage:
                             Default: ${mirror_type}
      -L <git_protocol>      Git protocol. It can be 'http' or 'ssh'.
                             Default: ${git_protocol}
-     -l <repo_name>         Repository name on the mirror.
-                            Default: ${repo_name}
-     -n <namespace>         Repository namespace on the mirror.
-                            Default: ${target_namespace}
-     -D <y/n>               Whether to check for package
-                            dependencies.
-                            Default: ${dependencies_check}
-     -R <y/n>               Resolve missing dependencies.
-                            Default: ${dependencies_resolve}
-     -o <output_dir>        Output directory.
-                            Default: ${output_dir}
-     -T                     Clean cache at the end
-                            of the operation.
-                            Default: ${cache_clean}
 
+  application options:
      -c                     Colors.
      -h                     This message.
      -v                     Enable verbose output
