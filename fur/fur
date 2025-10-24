@@ -1188,7 +1188,7 @@ Usage:
      -m <mirror>            Fur mirror, can be 'github' or
                             'gitlab'.
                             Default: ${target_mirror}
-     -t <mirror_type>       It can be 'tree'.
+     -t <mirror_type>       It can be 'tree' or 'ci'.
                             Default: ${mirror_type}
      -L <git_protocol>      Git protocol. It can be 'http' or 'ssh'.
                             Default: ${git_protocol}
