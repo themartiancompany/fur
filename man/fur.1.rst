@@ -66,27 +66,52 @@ Options
 =======
 
 -p package_manager      Package manager.
--d                      Download only (noinstall).
+
 -w repo-dir             Directory containing the fur tree.
                         To be set when download only is true,
                         otherwise is temporary.
+
 -K sig-dir              Signatures directory.
+
+-d                      Download only (noinstall).
+
+-D <y/n>                Whether to skip dependencies check.
+
+-R <y/n>                Resolve missing dependencies.
+
+Platform options
+=================
+
 -P platform             Platform for which to retrieve packages,
                         can be 'arch' or 'termux'.
+
 -A architecture         Architecture for which to retrieve packages,
                         can be 'any', 'arm' or 'x86_64'.
--m mirror               Fur mirror, can be 'github' or
-                        'gitlab'.
--t mirror-type          It can be 'tree'.
--L git-protocol         Repository name on the mirror.
--l repo-name            Repository name on the mirror.
--D y\/n                 Whether to skip dependencies
-                        check.
--R y\/n                 Resolve missing dependencies.
+
+
 -o output_dir           Output directory for the packages.
 
+Mirror options
+=================
+
+-l repo-name            Repository name on the mirror.
+
+-m mirror               Fur mirror, can be 'github' or
+                        'gitlab'.
+
+-t mirror-type          It can be 'tree' or 'ci'.
+
+-L git-protocol         Git protocol. Relevant when
+                        mirror type is set to 'tree'.
+                        It can be 'https' or 'ssh'.
+
+Application options
+=====================
+
 -h                      Display help.
+
 -c                      Enable color output
+
 -v                      Enable verbose output
 
 Bugs
