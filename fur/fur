@@ -502,7 +502,15 @@ _depends_check() {
     _depends_string \
     _depends=() \
     _msg=() \
-    _resolve_flag
+    _resolve_flag \
+    _separators=()
+  _separators=(
+    "<="
+    ">="
+    "<"
+    ">"
+    "="
+  )
   _msg=(
     "Resolving dependencies for"
     "'${_pkgname}'."
@@ -525,7 +533,7 @@ _depends_check() {
   for _depend in "${_depends[@]}"; do
     _resolve_flag="false"
     _depend_target="${_depend}"
-    for _sep in "<" ">" "<=" ">=" "="; do
+    for _sep in "${_separators[@]}"; do
       if [[ "${_depend}" == *"${_sep}"* ]]; then
         _depend_name="${_depend%${_sep}*}"
         _depend_pkgver="${_depend#${_depend_name}}"
