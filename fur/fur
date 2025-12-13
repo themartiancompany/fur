@@ -525,17 +525,15 @@ _depends_check() {
   for _depend in "${_depends[@]}"; do
     _resolve_flag="false"
     _depend_target="${_depend}"
-    if [[ "${_depend}" == *"<"* ]]; then
-      _depend_name="${_depend%<*}"
-      _depend_pkgver="${_depend#${_depend_name}}"
-      _resolve_flag="true"
-      _depend_target="${_depend_name}"
-    elif [[ "${_depend}" == *"="* ]]; then
-      _depend_name="${_depend%=*}"
-      _depend_pkgver="${_depend#=${_depend_name}}"
-      _resolve_flag="true"
-      _depend_target="${_depend_name}"
-    fi
+    for _sep in "<" ">" "<=" ">=" "="; do
+      if [[ "${_depend}" == *"${_sep}"* ]]; then
+        _depend_name="${_depend%${_sep}*}"
+        _depend_pkgver="${_depend#${_depend_name}}"
+        _resolve_flag="true"
+        _depend_target="${_depend_name}"
+        break
+      fi
+    done
     if [[ "${_resolve_flag}" == "true" ]]; then
       _msg=(
         "It is requested version"
