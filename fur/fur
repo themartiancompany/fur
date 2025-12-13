@@ -88,11 +88,12 @@ _global_variables() {
 
 _pkgs_get() {
   local \
-    _dir="${1}"
+    _dir="${1}" \
+    _pkgs_array=()
   mapfile \
     -d \
     $'\0' \
-    _pkgs < \
+    _pkgs_array < \
     <(find \
         "${_dir}" \
         \( \
@@ -106,9 +107,9 @@ _pkgs_get() {
           "f" \
         -print0 || \
       true)
-  #_array_set \
-  #  "_pkgs" \
-  #  "_pkgs_set"
+  _array_set \
+    "_pkgs_array" \
+    "_pkgs"
   #echo \
   #  "${_pkgs_set[@]}"
   #_pkgs=(
