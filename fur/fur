@@ -86,10 +86,16 @@ _global_variables() {
   quiet=""
 }
 
-_pkgs_get() {
+_pkgs_repo_get() {
   local \
     _dir="${1}" \
-    _pkgs_array=()
+    _pkgs_array=() \
+    _find_opts=()
+  _find_opts+=(
+    -type
+      "f"
+    -print0
+  )
   mapfile \
     -d \
     $'\0' \
@@ -103,18 +109,46 @@ _pkgs_get() {
         ! -iwholename \
             "*/${_platform}/*/*.pkg.*.sig" \
 	\) \
-        -type \
-          "f" \
-        -print0 || \
+        "${_find_opts[@]}" || \
       true)
   _array_set \
     "_pkgs_array" \
     "_pkgs"
-  #echo \
-  #  "${_pkgs_set[@]}"
-  #_pkgs=(
-  #  "${_pkgs_set[@]}"
-  #)
+}
+
+_pkgs_plain_get() {
+  local \
+    _dir="${1}" \
+    _pkgs_array=() \
+    _find_opts=()
+  _find_opts+=(
+    -type
+      "f"
+    -maxdepth
+      "1"
+    -print0 
+    -exec
+      realpath
+        '{}'
+  )
+  mapfile \
+    -d \
+    $'\0' \
+    _pkgs_array < \
+    <(find \
+        "${_dir}" \
+        \( \
+          -iwholename \
+            "*.pkg.*" \
+          -a \
+        ! -iwholename \
+            "*.pkg.*.sig" \
+	\) \
+        "${_find_opts[@]}" || \
+      true)
+  _array_set \
+    "_pkgs_array" \
+    "_pkgs"
 }
 
 _sigs_get() {
@@ -147,12 +181,9 @@ _install_pkgs() {
     _sigs=() \
     _sig \
     _cmd=() \
-    _pwd \
     _sig_verify \
     _msg=()
   _sig_verify="false"
-  _pwd="$( \
-    pwd)"
   _msg=(
     "Installing downloaded packages."
   )
@@ -180,18 +211,8 @@ _install_pkgs() {
       "${_sigs[@]}" || \
       true
   fi
-  _pkgs=( $( \
-    find \
-      "${_repo_dir}" \
-      -maxdepth \
-        "1" \
-      -iname \
-        "*.pkg.tar*" \
-      -exec \
-        realpath \
-          '{}' \;)
-  ) || \
-  true
+  _pkgs_plain_get \
+    "${_repo_dir}"
   _msg=(
     "Installing ${_pkgs[*]}."
   )
@@ -694,7 +715,7 @@ _fur_tree_get() {
         "${_msg[*]}" \
         0 )
   done
-  _pkgs_get \
+  _pkgs_repo_get \
     "${_repo_dir}/fur"
   if [[ "${_pkgs[*]}" == "" ]]; then
     _msg=(
