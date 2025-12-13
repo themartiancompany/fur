@@ -144,7 +144,10 @@ _pkgs_plain_get() {
         ! -iwholename \
             "*.pkg.*.sig" \
 	\) \
-        "${_find_opts[@]}" || \
+        "${_find_opts[@]}" \
+          -exec \
+            realpath \
+              '{}' || \
       true)
   _array_set \
     "_pkgs_array" \
