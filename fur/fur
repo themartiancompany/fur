@@ -90,10 +90,13 @@ _pkgs_repo_get() {
   local \
     _dir="${1}" \
     _pkgs_array=() \
-    _find_opts=()
-  _find_opts+=(
+    _find_opts=() \
+    _find_global_opts=()
+  _find_global_opts+=(
     -type
       "f"
+  )
+  _find_opts+=(
     -print0
   )
   mapfile \
@@ -102,13 +105,14 @@ _pkgs_repo_get() {
     _pkgs_array < \
     <(find \
         "${_dir}" \
+        "${_find_global_opts[@]}" \
         \( \
           -iwholename \
             "*/${_platform}/*/*.pkg.*" \
           -a \
         ! -iwholename \
             "*/${_platform}/*/*.pkg.*.sig" \
-	\) \
+        \) \
         "${_find_opts[@]}" || \
       true)
   _array_set \
@@ -120,16 +124,16 @@ _pkgs_plain_get() {
   local \
     _dir="${1}" \
     _pkgs_array=() \
-    _find_opts=()
-  _find_opts+=(
-    -type
-      "f"
+    _find_opts=() \
+    _find_global_opts=()
+  _find_global_opts+=(
     -maxdepth
       "1"
+    -type
+      "f"
+  )
+  _find_opts+=(
     -print0 
-    -exec
-      realpath
-        '{}'
   )
   mapfile \
     -d \
@@ -137,17 +141,15 @@ _pkgs_plain_get() {
     _pkgs_array < \
     <(find \
         "${_dir}" \
+        "${_find_global_opts[@]}" \
         \( \
           -iwholename \
             "*.pkg.*" \
           -a \
         ! -iwholename \
             "*.pkg.*.sig" \
-	\) \
-        "${_find_opts[@]}" \
-          -exec \
-            realpath \
-              '{}' || \
+        \) \
+        "${_find_opts[@]}" || \
       true)
   _array_set \
     "_pkgs_array" \
@@ -185,7 +187,13 @@ _install_pkgs() {
     _sig \
     _cmd=() \
     _sig_verify \
-    _msg=()
+    _msg=() \
+    _rm_opts=()
+  if [[ "${quiet}" == "y" ]]; then
+    rm_opts+=(
+      -v
+    )
+  fi
   _sig_verify="false"
   _msg=(
     "Installing downloaded packages."
@@ -209,8 +217,11 @@ _install_pkgs() {
     )
     _msg_info \
       "${_msg[*]}"
+    _rm_opt+=(
+      -rf
+    )
     rm \
-      -rf \
+      "${_rm_opts[@]}" \
       "${_sigs[@]}" || \
       true
   fi
