@@ -852,6 +852,8 @@ _fur_gitlab_release_get() {
   _gur_opts+=(
     -N
       "${_target_namespace}"
+    -m
+      "gitlab"
   )
   _old_pwd="${PWD}"
   _msg=(
