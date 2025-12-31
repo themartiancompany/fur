@@ -151,6 +151,9 @@ _pkgs_plain_get() {
         \) \
         "${_find_opts[@]}" || \
       true)
+  _pkgs=(
+    "${_pkgs_array[@]}"
+  )
 }
 
 _sigs_get() {
