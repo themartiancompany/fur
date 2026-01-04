@@ -108,10 +108,10 @@ _pkgs_repo_get() {
         "${_find_global_opts[@]}" \
         \( \
           -iwholename \
-            "*/${_platform}/*/*.pkg.*" \
+            "*/${_target_platform}/*/*.pkg.*" \
           -a \
         ! -iwholename \
-            "*/${_platform}/*/*.pkg.*.sig" \
+            "*/${_target_platform}/*/*.pkg.*.sig" \
         \) \
         "${_find_opts[@]}" || \
       true)
@@ -637,6 +637,24 @@ _package_retrieved() {
   fi
 }
 
+_fur_tree_dir_clean() {
+  local \
+    _repo_dir="${1}" \
+    _msg=()
+  if [[ -e "${_repo_dir}/fur" ]]; then
+    _msg=(
+      "Fur directory exists"
+      "already in '${_repo_dir}',"
+      "deleting."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    rm \
+      -rf \
+      "${_repo_dir}/fur"
+  fi
+}
+
 _fur_tree_get() {
   local \
     _pkg="${1}" \
@@ -650,6 +668,8 @@ _fur_tree_get() {
     _oldpwd \
     _dir \
     _pkgname \
+    _pkg_file \
+    _pkg_filename \
     _msg=()
   if [[ "${quiet}" == "y" ]]; then
     _clone_opts+=(
@@ -678,18 +698,8 @@ _fur_tree_get() {
     pwd)"
   cd \
     "${_repo_dir}"
-  if [[ -e "fur" ]]; then
-    _msg=(
-      "Fur directory exists"
-      "already in '${_repo_dir}',"
-      "deleting."
-    )
-    _msg_info \
-      "${_msg[*]}"
-    rm \
-      -rf \
-      "fur"
-  fi
+  _fur_tree_dir_clean \
+    "${_repo_dir}"
   git \
     clone \
       "${_git_opts[@]}" \
@@ -704,9 +714,11 @@ _fur_tree_get() {
   _msg_info \
     "${_msg[*]}"
   for _dir in "fur/"*; do
+    _platform="$(
+      basename \
+        "${_dir}")"
     if [[ ! -d "${_dir}" || \
-          "$(basename \
-            "${_dir}")" != "${_platform}" ]]; then
+          "${_platform}" != "${_target_platform}" ]]; then
       rm \
         -rf \
         "${_dir}"
@@ -781,9 +793,10 @@ _fur_tree_get() {
         1 )
   done
   for _pkg in "${_pkgs[@]}"; do
-    _pkg_file="${_repo_dir}/$( \
+    _pkg_filename="$(
       basename \
         "${_pkg}")"
+    _pkg_file="${_repo_dir}/${_pkg_filename}"
     _pkgname="$( \
       package-info-get \
         "${_pkg_file}" \
@@ -855,7 +868,8 @@ _fur_gitlab_release_get() {
     _repo_dir="${2}" \
     _msg=() \
     _old_pwd \
-    _gur_opts=()
+    _gur_opts=() \
+    _pkgs=()
   if [[ "${quiet}" == "n" ]]; then
     _gur_opts+=(
       -v
@@ -872,6 +886,7 @@ _fur_gitlab_release_get() {
     "Retrieving binary package"
     "'${_pkg}' from Gur"
     "releases."
+    "Remaining packages '${_packages_to_retrieve[@]}'"
   )
   _msg_info \
     "${_msg[*]}"
@@ -882,6 +897,38 @@ _fur_gitlab_release_get() {
     get \
       release \
         "${_pkg}"
+  _depends_retrieved+=(
+    "${_pkg}"
+  )
+  _pkgs_plain_get \
+    "${_repo_dir}"
+  for _pkg in "${_pkgs[@]}"; do
+    _pkg_filename="$(
+      basename \
+        "${_pkg}")"
+    # _pkg_file="${_repo_dir}/${_pkg_filename}"
+    _pkgname="$( \
+      package-info-get \
+        "${_pkg}" \
+        "pkgname")"
+    _package_retrieved \
+      "${_pkgname}"
+    tree \
+      "${_repo_dir}"
+    if [[ "${_dependencies_resolve}" == "n" ]]; then
+      _msg=(
+        "Skipping dependencies resolving"
+        "for '${_pkgname}'."
+      )
+      _msg_info \
+        "${_msg[*]}"
+    elif [[ "${_dependencies_resolve}" == "y" ]]; then
+      _depends_check \
+       "${_repo_dir}/$( \
+         basename \
+           "${_pkg}")"
+    fi
+  done
   cd \
     "${_old_pwd}"
 }
@@ -889,7 +936,7 @@ _fur_gitlab_release_get() {
 # $@: packages
 _fur() {
   local \
-    _platform="${1}" \
+    _target_platform="${1}" \
     _arch="${2}" \
     _pkgmgr="${3}" \
     _noinstall="${4}" \
@@ -940,8 +987,7 @@ _fur() {
       "${_repo_dir}"
     _packages_to_retrieve=()
     for _pkg in "${_packages[@]}"; do
-      if [[ "${_pkg}" != "${_package}" && \
-            " ${_packages[@]} " != *" ${_pkg} "* ]]; then
+      if [[ "${_pkg}" != "${_package}" ]]; then
         _packages_to_retrieve+=(
           "${_pkg}"
         )
