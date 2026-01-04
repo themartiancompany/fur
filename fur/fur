@@ -940,7 +940,8 @@ _fur() {
       "${_repo_dir}"
     _packages_to_retrieve=()
     for _pkg in "${_packages[@]}"; do
-      if [[ "${_pkg}" != "${_package}" ]]; then
+      if [[ "${_pkg}" != "${_package}" && \
+            " ${_packages[@]} " != *" ${_pkg} "* ]]; then
         _packages_to_retrieve+=(
           "${_pkg}"
         )
