@@ -124,6 +124,7 @@ _pkgs_plain_get() {
   local \
     _dir="${1}" \
     _pkgs_array=() \
+    _pkgs_hurr=() \
     _find_opts=() \
     _find_global_opts=()
   _find_global_opts+=(
@@ -151,9 +152,20 @@ _pkgs_plain_get() {
         \) \
         "${_find_opts[@]}" || \
       true)
-  _pkgs=(
-    "${_pkgs_array[@]}"
-  )
+  _array_set \
+    "_pkgs_array" \
+    "_pkgs_hurr"
+  # _pkgs=(
+  #   "${_pkgs_array[@]}"
+  # )
+  _pkgs=()
+  for _pkg in "${_pkgs_hurr[@]}"; do
+    if [[ -e "${_pkg}" ]]; then
+      _pkgs+=(
+        "${_pkg}"
+      )
+    fi
+  done
 }
 
 _sigs_get() {
