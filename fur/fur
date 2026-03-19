@@ -54,7 +54,7 @@ _requirements() {
 
 _requirements_github_ci() {
   _check_cmd \
-    "gh-dl"
+    "gur"
 }
 
 _requirements_gitlab_ci() {
