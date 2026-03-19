@@ -848,18 +848,71 @@ _fur_github_release_get() {
   local \
     _pkg="${1}" \
     _repo_dir="${2}" \
-    _msg=()
+    _msg=() \
+    _old_pwd \
+    _gur_opts=() \
+    _pkgs=()
+  if [[ "${quiet}" == "n" ]]; then
+    _gur_opts+=(
+      -v
+    )
+  fi
+  _gur_opts+=(
+    -N
+      "${_target_namespace}"
+    -m
+      "github"
+  )
+  _old_pwd="${PWD}"
   _msg=(
     "Retrieving binary package"
-    "'${_pkg}' from Github Ur"
-    "mirror releases."
+    "'${_pkg}' from Gur Github"
+    "releases from namespace '${_target_namespace}'."
+    "Remaining packages '${_packages_to_retrieve[@]}'"
   )
   _msg_info \
     "${_msg[*]}"
-  exit \
-    1
-  # gh-dl \
-  #   ""
+  cd \
+    "${_repo_dir}"
+  gur \
+    "${_gur_opts[@]}" \
+    get \
+      release \
+        "${_pkg}"
+  _depends_retrieved+=(
+    "${_pkg}"
+  )
+  _pkgs_plain_get \
+    "${_repo_dir}"
+  for _pkg in "${_pkgs[@]}"; do
+    _pkg_filename="$(
+      basename \
+        "${_pkg}")"
+    # _pkg_file="${_repo_dir}/${_pkg_filename}"
+    _pkgname="$( \
+      package-info-get \
+        "${_pkg}" \
+        "pkgname")"
+    _package_retrieved \
+      "${_pkgname}"
+    tree \
+      "${_repo_dir}"
+    if [[ "${_dependencies_resolve}" == "n" ]]; then
+      _msg=(
+        "Skipping dependencies resolving"
+        "for '${_pkgname}'."
+      )
+      _msg_info \
+        "${_msg[*]}"
+    elif [[ "${_dependencies_resolve}" == "y" ]]; then
+      _depends_check \
+       "${_repo_dir}/$( \
+         basename \
+           "${_pkg}")"
+    fi
+  done
+  cd \
+    "${_old_pwd}"
 }
 
 _fur_gitlab_release_get() {
