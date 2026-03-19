@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0
 
 #    ----------------------------------------------------------------------
-#    Copyright © 2024, 2025  Pellegrino Prevete
+#    Copyright © 2024, 2025, 2026  Pellegrino Prevete
 #
 #    All rights reserved
 #    ----------------------------------------------------------------------
@@ -21,13 +21,12 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-_bin="$( \
+_bin="$(
   dirname \
-    "$( \
-      command \
-        -v \
-	  "env")")"
-_lib="$( \
+    "$(command \
+         -v \
+	 "env")")"
+_lib="$(
   realpath \
     "${_bin}/../lib")"
 _crash_bash="${_lib}/libcrash-bash/crash-bash"
@@ -286,7 +285,7 @@ _token_private_get() {
     echo \
       "${_tokens_namespace[0]}"
     _token_private="${_tokens_namespace[0]}"
-    _token_name="$( \
+    _token_name="$(
       basename \
         "${_token_private}")"
     _token_name="${_token_name#${_namespace}-}"
@@ -311,7 +310,7 @@ _token_private_get() {
     )
     _msg_info \
       "${_msg[*]}"
-    _token="$( \
+    _token="$(
       cat \
         "${_token_private}")"
   elif [[ -e "${_token_private}" ]]; then
@@ -381,7 +380,7 @@ _depend_available_get() {
   )
   _msg_info \
     "${_msg[*]}"
-  _available="$( \
+  _available="$(
     pacman \
       -Si \
       "${_depend}" \
@@ -422,7 +421,7 @@ _pkg_installed_get() {
   )
   _msg_info \
     "${_msg[*]}"
-  _installed="$( \
+  _installed="$(
     pacman \
       -Q \
       "${_depend}" 2>/dev/null || \
@@ -447,7 +446,7 @@ _depend_local_get() {
     _pkgs=()
   for _pkg_file in \
     "${_repo_dir}/"*".pkg.tar.xz"; do
-    _pkgname="$( \
+    _pkgname="$(
       basename \
         "${_pkg_file}" | \
         rev | \
@@ -565,7 +564,7 @@ _depends_check() {
   )
   _msg_info \
     "${_msg[*]}"
-  _depends_string="$( \
+  _depends_string="$(
     package-info-get \
       "${_pkg}" \
       "depend")"
@@ -694,8 +693,7 @@ _fur_tree_get() {
     "${_mirror}" \
     "${_target_namespace}" \
     "${_git_protocol}"
-  _oldpwd="$( \
-    pwd)"
+  _oldpwd="${PWD}"
   cd \
     "${_repo_dir}"
   _fur_tree_dir_clean \
@@ -770,7 +768,7 @@ _fur_tree_get() {
   _msg_info \
     "${_msg[*]}"
   for _pkg in "${_pkgs[@]}"; do
-    _pkgname="$( \
+    _pkgname="$(
       package-info-get \
         "${_pkg}" \
         "pkgname")"
@@ -797,7 +795,7 @@ _fur_tree_get() {
       basename \
         "${_pkg}")"
     _pkg_file="${_repo_dir}/${_pkg_filename}"
-    _pkgname="$( \
+    _pkgname="$(
       package-info-get \
         "${_pkg_file}" \
         "pkgname")"
@@ -814,7 +812,7 @@ _fur_tree_get() {
         "${_msg[*]}"
     elif [[ "${_dependencies_resolve}" == "y" ]]; then
       _depends_check \
-       "${_repo_dir}/$( \
+       "${_repo_dir}/$(
          basename \
            "${_pkg}")"
     fi
@@ -889,7 +887,7 @@ _fur_github_release_get() {
       basename \
         "${_pkg}")"
     # _pkg_file="${_repo_dir}/${_pkg_filename}"
-    _pkgname="$( \
+    _pkgname="$(
       package-info-get \
         "${_pkg}" \
         "pkgname")"
@@ -906,7 +904,7 @@ _fur_github_release_get() {
         "${_msg[*]}"
     elif [[ "${_dependencies_resolve}" == "y" ]]; then
       _depends_check \
-       "${_repo_dir}/$( \
+       "${_repo_dir}/$(
          basename \
            "${_pkg}")"
     fi
@@ -960,7 +958,7 @@ _fur_gitlab_release_get() {
       basename \
         "${_pkg}")"
     # _pkg_file="${_repo_dir}/${_pkg_filename}"
-    _pkgname="$( \
+    _pkgname="$(
       package-info-get \
         "${_pkg}" \
         "pkgname")"
@@ -977,7 +975,7 @@ _fur_gitlab_release_get() {
         "${_msg[*]}"
     elif [[ "${_dependencies_resolve}" == "y" ]]; then
       _depends_check \
-       "${_repo_dir}/$( \
+       "${_repo_dir}/$(
          basename \
            "${_pkg}")"
     fi
@@ -1050,7 +1048,7 @@ _fur() {
   # for _pkg \
   #   in "${_packages[@]}"; do
     # if [[ "${_noinstall}" == "false" ]]; then
-    #   _repo_dir="$( \
+    #   _repo_dir="$(
     #     mktemp \
     #       -d)"
     # fi
@@ -1074,7 +1072,7 @@ _pkgmgr_depends_opts_get() {
     _pkgmgr="${1}" \
     _name \
     _opts=()
-  _name="$( \
+  _name="$(
     basename \
       "${_pkgmgr}")"
   if [[ "${_name}" == "inteppacman" ]]; then
@@ -1109,7 +1107,7 @@ _pkgmgr_opts_get() {
     _pkgmgr="${1}" \
     _name \
     _opts=()
-  _name="$( \
+  _name="$(
     basename \
       "${_pkgmgr}")"
   if [[ "${_name}" == "inteppacman" ]]; then
@@ -1144,7 +1142,7 @@ _platform_auto_detect() {
     _platform \
     _os
   _platform="arch"
-  _os="$( \
+  _os="$(
     uname \
       -o)"
   if [[ "${_os}" == "Android" ]] || \
@@ -1188,7 +1186,7 @@ _repo_dir_auto_detect() {
 _package_manager_auto_detect() {
   local \
     _package_manager
-  _package_manager="$( \
+  _package_manager="$(
     command \
       -v \
       "inteppacman" || \
@@ -1273,7 +1271,7 @@ _set_overrides() {
     installed_packages+=(
       "$(basename \
         "$(realpath \
-          "$(pwd)")")"
+          "${PWD}")")"
     )
     _msg=(
       "No input package given,"

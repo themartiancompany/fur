@@ -2,7 +2,7 @@
    SPDX-License-Identifier: AGPL-3.0-or-later
 
    ----------------------------------------------------------------------
-   Copyright © 2024, 2025  Pellegrino Prevete
+   Copyright © 2024, 2025, 2026  Pellegrino Prevete
 
    All rights reserved
    ----------------------------------------------------------------------
@@ -43,7 +43,7 @@ The fur, acronym for "Fallback User Repository",
 is an helper program for the uncensorable, unstoppable
 Ur user repository and application store which
 retrieves and installs binary packages from
-censorable sources, like Github.
+censorable sources, like Github and Gitlab.
 
 Of course the name 'fur' carries other meanings
 as well, given the Ur is the DogeOS application store.
@@ -51,16 +51,35 @@ as well, given the Ur is the DogeOS application store.
 I suppose nobody should explain how a fur relates
 to a Doge, no?
 
-Repo structure
-===============
+Repo structures
+================
 
-Each branch on a repository represents a software
-package. Packages are currently provided for the desktop
+The fur program supports retrieving binary
+packages from Github and Gitlab using two different
+structures.
+
+* The "tree" structure foresees the target namespace
+  providing a single Git repository (by default the public
+  one is named 'fur', see the -l option below).
+
+  The only exception to the above rule is the
+  "main" branch, which contains the fur program
+  source code.
+
+* The "ci" structure foresees having made available in
+  the universal recipe repository the build platform
+  (currently 'github' or 'gitlab') continuous integration
+  files for one of the supported platforms.
+
+Packages are provided for desktop
 and mobile Life and DogeOS bases.
 
-If you want a binary package for a new software to
-be added to this specific instance of the fur,
-feel free to open a request in the issues section.
+If you want to propose a package for inclusion
+in The Martian Company's Fallback User Repository
+a request can be opened in the issues section
+of the public Fallback User repository
+Github mirror at the link reported below using
+the tag '[Package request]'.
 
 Options
 =======
@@ -70,7 +89,6 @@ Options
                         otherwise is temporary.
 
 -K sig-dir              Signatures directory.
-
 -d                      Download only (noinstall).
 
 -o output_dir           Output directory for the packages.
