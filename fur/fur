@@ -849,7 +849,15 @@ _fur_github_release_get() {
     _msg=() \
     _old_pwd \
     _gur_opts=() \
+    _os \
+    _arch \
     _pkgs=()
+  _os="$(
+    uname \
+      -o)"
+  _arch="$(
+    uname \
+      -m)"
   if [[ "${quiet}" == "n" ]]; then
     _gur_opts+=(
       -v
@@ -877,6 +885,12 @@ _fur_github_release_get() {
     get \
       release \
         "${_pkg}"
+  if [[ "${_os}" == "Android" ]]; then
+    rm \
+      "dogeos-gnu"*".pkg.tar"* \
+      "dogeos-windows"*".pkg.tar"*
+    # Arch filter
+  fi
   _depends_retrieved+=(
     "${_pkg}"
   )
