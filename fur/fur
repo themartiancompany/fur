@@ -890,6 +890,30 @@ _fur_github_release_get() {
       "dogeos-gnu"*".pkg.tar"* \
       "dogeos-windows"*".pkg.tar"*
     # Arch filter
+    if [[ "${_arch}" != "any" ]]; then
+      if [[ "${_arch}" == "aarch64" ]]; then
+        rm \
+          -rf \
+          "dogeos-android"*"-arm.pkg.tar"* \
+          "dogeos-android"*"-i686.pkg.tar"* \
+          "dogeos-android"*"-x86_64.pkg.tar"*
+      elif [[ "${_arch}" == "arm" ]]; then
+        rm \
+          -rf \
+          "dogeos-android"*"-aarch64.pkg.tar"* \
+          "dogeos-android"*"-i686.pkg.tar"* \
+          "dogeos-android"*"-x86_64.pkg.tar"*
+      elif [[ "${_arch}" == "x86_64" ]]; then
+        rm \
+          -rf \
+          "dogeos-android"*"-aarch64.pkg.tar"* \
+          "dogeos-android"*"-arm.pkg.tar"*
+          "dogeos-android"*"-i686.pkg.tar"*
+      else
+        echo \
+          "Architecture: '${_arch}'."
+      fi
+    fi
   fi
   _depends_retrieved+=(
     "${_pkg}"
