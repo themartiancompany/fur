@@ -914,6 +914,16 @@ _fur_github_release_get() {
           "Architecture: '${_arch}'."
       fi
     fi
+  elif [[ "${_os}" == "GNU/Linux" ]]; then
+    rm \
+      -rf \
+      "dogeos-android"*".pkg.tar"* \
+      "dogeos-windows"*".pkg.tar"*
+  elif [[ "${_os}" == "Msys" ]]; then
+    rm \
+      -rf \
+      "dogeos-android"*".pkg.tar"* \
+      "dogeos-gnu"*".pkg.tar"*
   fi
   _depends_retrieved+=(
     "${_pkg}"
