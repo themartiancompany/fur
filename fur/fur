@@ -218,9 +218,8 @@ _install_pkgs() {
       _msg=(
         "Found no signatures."
       )
-      _msg_error \
-        "${_msg[*]}" \
-        1
+      _msg_warning \
+        "${_msg[*]}"
     else
       _msg=(
         "Signature verification disabled,"
