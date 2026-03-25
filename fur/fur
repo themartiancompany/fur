@@ -211,30 +211,31 @@ _install_pkgs() {
   )
   _msg_info \
     "${_msg[*]}"
-  _sigs_get \
-    "${_repo_dir}"
-  if [[ "${_sigs[*]}" == "" ]]; then
-    _msg=(
-      "Found no signatures."
-    )
-    _msg_error \
-      "${_msg[*]}" \
-      1
-  fi
   if [[ "${_sig_verify}" == "false" ]]; then
-    _msg=(
-      "Signature verification disabled,"
-      "removing all signatures '${_sigs[*]}'."
-    )
-    _msg_info \
-      "${_msg[*]}"
-    _rm_opt+=(
-      -rf
-    )
-    rm \
-      "${_rm_opts[@]}" \
-      "${_sigs[@]}" || \
-      true
+    _sigs_get \
+      "${_repo_dir}"
+    if [[ "${_sigs[*]}" == "" ]]; then
+      _msg=(
+        "Found no signatures."
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        1
+    else
+      _msg=(
+        "Signature verification disabled,"
+        "removing all signatures '${_sigs[*]}'."
+      )
+      _msg_info \
+        "${_msg[*]}"
+      _rm_opt+=(
+        -rf
+      )
+      rm \
+        "${_rm_opts[@]}" \
+        "${_sigs[@]}" || \
+        true
+    fi
   fi
   _pkgs_plain_get \
     "${_repo_dir}"
