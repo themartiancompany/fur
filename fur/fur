@@ -49,6 +49,9 @@ _requirements() {
     "package-info-get" \
     "reallymakepkg"
   _check_cmd \
+    "platform-get" \
+    "reallymakepkg"
+  _check_cmd \
     "tree"
 }
 
@@ -1415,7 +1418,7 @@ Usage:
                             'gitlab'.
                             Default: ${target_mirror}
      -t <mirror_type>       It can be 'tree' or 'ci'.
-                            Default: ${mirror_type}
+                            Default: ${mirror_types[*]}
      -L <git_protocol>      Git protocol. It can be 'http' or 'ssh'.
                             Default: ${git_protocol}
 
