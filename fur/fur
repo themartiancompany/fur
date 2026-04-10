@@ -77,7 +77,7 @@ _global_variables() {
   target_mirror=""
   target_namespace=""
   repo_name=""
-  mirror_type=""
+  mirror_types=()
   git_protocol=""
   output_dir=""
   cache_clean=""
@@ -511,7 +511,7 @@ _depend_resolve() {
             _packages_to_retrieve+=(
               "${_depend}"
             )
-            "_fur_${_mirror_type}_get" \
+            "_fur_${_mirror_types[@]}_get" \
               "${_depend}" \
               "${_target_mirror}" \
               "${_repo_dir}"
@@ -1044,12 +1044,14 @@ _fur() {
     _target_mirror="${7}" \
     _target_namespace="${8}" \
     _repo_name="${9}" \
-    _mirror_type="${10}" \
-    _git_protocol="${11}" \
-    _dependencies_check="${12}" \
-    _dependencies_resolve="${13}" \
-    _output_dir="${14}" \
-    _cache_clean="${15}" \
+    _mirror_type_length="${10}" \
+    _mirror_types=() \
+    _mirror_type \
+    _git_protocol \
+    _dependencies_check \
+    _dependencies_resolve \
+    _output_dir \
+    _cache_clean \
     _packages=() \
     _packages_to_retrieve=() \
     _depends_retrieved=() \
@@ -1060,6 +1062,19 @@ _fur() {
     _pkg \
     _url \
     _msg=()
+  for _mirror_type \
+    in $(seq \
+           "${_mirror_type_length}"); do
+    _mirror_types+=(
+      "${11}"
+    )
+    shift
+  done
+  _git_protocol="${11}"
+  _dependencies_check="${12}"
+  _dependencies_resolve="${13}"
+  _output_dir="${14}"
+  _cache_clean="${15}"
   shift \
     15
   _packages=(
@@ -1080,7 +1095,7 @@ _fur() {
   while \
     (( "${#_packages_to_retrieve[@]}" > 0 )); do
     _package="${_packages_to_retrieve[0]}"
-    "_fur_${_mirror_type}_get" \
+    "_fur_${_mirror_types[0]}_get" \
       "${_package}" \
       "${_target_mirror}" \
       "${_repo_dir}"
@@ -1185,24 +1200,6 @@ _pkgmgr_opts_get() {
     "${_opts[@]}"
 }
 
-_platform_auto_detect() {
-  local \
-    _platform \
-    _os
-  _platform="arch"
-  _os="$(
-    uname \
-      -o)"
-  if [[ "${_os}" == "Android" ]] || \
-     [[ -v "TERMUX_VERSION" ]]; then
-    _platform="termux"
-  fi
-  _set_override \
-    "target" \
-    "platform" \
-    "${_platform}"
-}
-
 _output_dir_auto_detect() {
   local \
     _output_dir
@@ -1248,6 +1245,15 @@ _package_manager_auto_detect() {
     "${_package_manager}"
 }
 
+_mirror_type_auto_detect() {
+  if (( "${#mirror_types[@]}" < 1 )); then
+    mirror_types+=(
+      "ci"
+      "tree"
+    )
+  fi
+}
+
 # Set defaults and, if present, overrides
 # from fur command line option parameters
 _set_overrides() {
@@ -1267,7 +1273,10 @@ _set_overrides() {
     "install" \
     "date" \
     "$(_get_date_human)"
-  _platform_auto_detect
+  _set_override \
+    "target" \
+    "platform" \
+    "$(platform-get)"
   _set_override \
     "target" \
     "arch" \
@@ -1298,10 +1307,7 @@ _set_overrides() {
     "repo" \
     "name" \
     "fur"
-  _set_override \
-    "mirror" \
-    "type" \
-    "tree"
+  _mirror_type_auto_detect
   _set_override \
     "git" \
     "protocol" \
@@ -1337,7 +1343,7 @@ _show_config() {
   _msg_info "          Target platform:   ${target_platform}"
   _msg_info "      Target architecture:   ${target_arch}"
   _msg_info "          Package manager:   ${package_manager}"
-  _msg_info "              Mirror type:   ${mirror_type}"
+  _msg_info "             Mirror types:   ${mirror_types[*]}"
   _msg_info "       Dependencies check:   ${dependencies_check}"
   _msg_info "   Dependencies resolving:   ${dependencies_resolve}"
   _msg_info "            Download only:   ${download_only}"
@@ -1445,7 +1451,9 @@ while \
     m) override_target_mirror="${OPTARG}" ;;
     l) override_repo_name="${OPTARG}" ;;
     n) override_target_namespace="${OPTARG}" ;;
-    t) override_mirror_type="${OPTARG}" ;;
+    t) mirror_types+=(
+         "${OPTARG}"
+       ) ;;
     L) override_git_protocol="${OPTARG}" ;;
     D) override_dependencies_check="${OPTARG}" ;;
     R) override_dependencies_resolve="${OPTARG}" ;;
@@ -1488,7 +1496,8 @@ app_opts=(
   "${target_mirror}"
   "${target_namespace}"
   "${repo_name}"
-  "${mirror_type}"
+  "${#mirror_types[@]}"
+  "${mirror_types[@]}"
   "${git_protocol}"
   "${dependencies_check}"
   "${dependencies_resolve}"
