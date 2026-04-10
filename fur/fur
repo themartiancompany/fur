@@ -1442,37 +1442,56 @@ while \
     arg; do
   case \
     "${arg}" in
-    P) override_target_platform="${OPTARG}" ;;
-    A) override_target_arch="${OPTARG}" ;;
-    p) override_package_manager="${OPTARG}" ;;
-    d) override_download_only="true" ;;
-    w) override_repo_dir="${OPTARG}" ;;
-    K) override_sig_dir="${OPTARG}" ;;
-    m) override_target_mirror="${OPTARG}" ;;
-    l) override_repo_name="${OPTARG}" ;;
-    n) override_target_namespace="${OPTARG}" ;;
-    t) mirror_types+=(
+    P)
+      override_target_platform="${OPTARG}" ;;
+    A)
+      override_target_arch="${OPTARG}" ;;
+    p)
+      override_package_manager="${OPTARG}" ;;
+    d)
+      override_download_only="true" ;;
+    w)
+      override_repo_dir="${OPTARG}" ;;
+    K)
+      override_sig_dir="${OPTARG}" ;;
+    m)
+      override_target_mirror="${OPTARG}" ;;
+    l)
+      override_repo_name="${OPTARG}" ;;
+    n)
+      override_target_namespace="${OPTARG}" ;;
+    t)
+      mirror_types+=(
          "${OPTARG}"
        ) ;;
-    L) override_git_protocol="${OPTARG}" ;;
-    D) override_dependencies_check="${OPTARG}" ;;
-    R) override_dependencies_resolve="${OPTARG}" ;;
-    o) override_output_dir="${OPTARG}" ;;
-    T) override_cache_clean="y" ;;
-    c) override_color="y" ;;
-    v) override_quiet="n" ;;
+    L)
+      override_git_protocol="${OPTARG}" ;;
+    D)
+      override_dependencies_check="${OPTARG}" ;;
+    R)
+      override_dependencies_resolve="${OPTARG}" ;;
+    o)
+      override_output_dir="${OPTARG}" ;;
+    T)
+      override_cache_clean="y" ;;
+    c)
+      override_color="y" ;;
+    v)
+      override_quiet="n" ;;
     h|?)
       _set_overrides && \
       _usage \
         0 ;;
     *)
-    _msg_error \
-      "Invalid argument '${arg}'." \
-      0 && \
-    _set_overrides && \
-    _usage \
-      1
-    ;;
+      _msg=(
+        "Invalid argument '${arg}'."
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        0
+      _set_overrides
+      _usage \
+        1 ;;
   esac
 done
 shift \
