@@ -618,6 +618,7 @@ _depends_check() {
         "${_depend_target}"
     done
   fi
+  true
 }
 
 _package_retrieved() {
