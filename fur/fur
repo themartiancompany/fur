@@ -844,6 +844,12 @@ _fur_tree_get() {
     -rf \
     "${_repo_dir}/fur" || \
     true
+  _msg=(
+    "Packages retrieved from"
+    "branch split fur."
+  )
+  _msg_info \
+    "${_msg[*]}"
 }
 
 _fur_ci_get() {
@@ -1120,6 +1126,11 @@ _fur() {
   while \
     (( "${#_packages_to_retrieve[@]}" > 0 )); do
     _package="${_packages_to_retrieve[0]}"
+    _msg=(
+      "Retrieving package '${_package}'..."
+    )
+    _msg_info \
+      "${_msg[*]}"
     "_fur_${_mirror_types[0]}_get" \
       "${_package}" \
       "${_target_mirror}" \
@@ -1348,6 +1359,19 @@ _target_mirrors_auto_detect() {
   fi
 }
 
+_cache_clean_auto_detect() {
+  local \
+    _cache_clean
+  _cache_clean="y"
+  if [[ "${quiet}" == "n" ]]; then
+    _cache_clean="n"
+  fi
+  _set_override \
+    "cache" \
+    "clean" \
+    "${_cache_clean}"
+}
+
 # Set defaults and, if present, overrides
 # from fur command line option parameters
 _set_overrides() {
@@ -1389,10 +1413,7 @@ _set_overrides() {
     "target" \
     "namespace" \
     "themartiancompany"
-  _set_override \
-    "cache" \
-    "clean" \
-    "n"
+  _cache_clean_auto_detect
   _set_override \
     "repo" \
     "name" \
