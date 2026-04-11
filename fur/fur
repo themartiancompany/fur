@@ -1272,7 +1272,8 @@ _mirror_type_auto_detect() {
 _target_namespaces_auto_detect() {
   local \
     _gitlab_dir \
-    _token
+    _token \
+    _msg=()
   _gitlab_dir="${HOME}/.config/gitlab.com"
   if [[ -e "${_gitlab_dir}" ]]; then
     for _token in "${_gitlab_dir}/"*; do
@@ -1285,6 +1286,11 @@ _target_namespaces_auto_detect() {
       )
     done
   fi
+  _msg=(
+    "Found namespaces '${target_namespaces[*]}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
   true
 }
 
