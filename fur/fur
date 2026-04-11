@@ -517,7 +517,7 @@ _depend_resolve() {
             _packages_to_retrieve+=(
               "${_depend}"
             )
-            "_fur_${_mirror_types[@]}_get" \
+            "_fur_${_mirror_types[0]}_get" \
               "${_depend}" \
               "${_target_mirror}" \
               "${_repo_dir}"
