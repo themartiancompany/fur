@@ -79,6 +79,7 @@ _global_variables() {
   repo_dir=""
   sig_dir=""
   target_mirror=""
+  target_namespaces=()
   target_namespace=""
   repo_name=""
   mirror_types=()
@@ -1254,11 +1255,37 @@ _package_manager_auto_detect() {
 
 _mirror_type_auto_detect() {
   if (( "${#mirror_types[@]}" < 1 )); then
-    mirror_types+=(
-      "ci"
-      "tree"
-    )
+    if (( "${#target_namespaces[@]}" < 1 )); then
+      mirror_types+=(
+        "tree"
+        "ci"
+      )
+    else
+      mirror_types+=(
+        "ci"
+        "tree"
+      )
+    fi
   fi
+}
+
+_target_namespaces_auto_detect() {
+  local \
+    _gitlab_dir \
+    _token
+  _gitlab_dir="${HOME}/.config/gitlab.com"
+  if [[ -e "${_gitlab_dir}" ]]; then
+    for _token in "${_gitlab_dir}/"*; do
+      _namespace_filename="$(
+        basename \
+          "${_token}")"
+      _namespace="${_namespace_filename%*.txt}"
+      target_namespaces+=(
+        "${_namespace}"
+      )
+    done
+  fi
+  true
 }
 
 # Set defaults and, if present, overrides
@@ -1314,6 +1341,7 @@ _set_overrides() {
     "repo" \
     "name" \
     "fur"
+  _target_namespaces_auto_detect
   _mirror_type_auto_detect
   _set_override \
     "git" \
