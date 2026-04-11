@@ -583,32 +583,41 @@ _depends_check() {
     _depends <<< \
     "$_depends_string" || \
   true
-  for _depend in "${_depends[@]}"; do
-    _resolve_flag="false"
-    _depend_target="${_depend}"
-    for _sep in "${_separators[@]}"; do
-      if [[ "${_depend}" == *"${_sep}"* ]]; then
-        _depend_name="${_depend%${_sep}*}"
-        _depend_pkgver="${_depend#${_depend_name}}"
-        _resolve_flag="true"
-        _depend_target="${_depend_name}"
-        break
+  if (( "${#_depends[@]}" < 1 )); then
+    _msg=(
+      "Package '${_pkg}'"
+      "has no depends."
+    )
+    _msg_info \
+      "${_msg[*]}"
+  elif (( 0 < "${#_depends[@]}" )); then
+    for _depend in "${_depends[@]}"; do
+      _resolve_flag="false"
+      _depend_target="${_depend}"
+      for _sep in "${_separators[@]}"; do
+        if [[ "${_depend}" == *"${_sep}"* ]]; then
+          _depend_name="${_depend%${_sep}*}"
+          _depend_pkgver="${_depend#${_depend_name}}"
+          _resolve_flag="true"
+          _depend_target="${_depend_name}"
+          break
+        fi
+      done
+      if [[ "${_resolve_flag}" == "true" ]]; then
+        _msg=(
+          "It is requested version"
+          "'${_depend_pkgver}' of"
+          "package '${_depend_name}'."
+          "Be aware the Fur doesn't"
+          "look for provides currently."
+        )
+        _msg_info \
+          "${_msg[*]}"
       fi
+      _depend_resolve \
+        "${_depend_target}"
     done
-    if [[ "${_resolve_flag}" == "true" ]]; then
-      _msg=(
-        "It is requested version"
-        "'${_depend_pkgver}' of"
-        "package '${_depend_name}'."
-        "Be aware the Fur doesn't"
-        "look for provides currently."
-      )
-      _msg_info \
-        "${_msg[*]}"
-    fi
-    _depend_resolve \
-      "${_depend_target}"
-  done
+  fi
 }
 
 _package_retrieved() {
