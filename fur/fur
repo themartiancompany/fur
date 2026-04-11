@@ -723,7 +723,7 @@ _fur_tree_get() {
       basename \
         "${_dir}")"
     if [[ ! -d "${_dir}" || \
-          ( "${_platform}" != "${_target_platform}" ]]; then
+          "${_platform}" != "${_target_platform}" ]]; then
       rm \
         -rf \
         "${_dir}"
