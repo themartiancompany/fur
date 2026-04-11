@@ -79,6 +79,7 @@ _global_variables() {
   repo_dir=""
   sig_dir=""
   target_mirror=""
+  target_mirrors=()
   target_namespaces=()
   target_namespace=""
   repo_name=""
@@ -1300,6 +1301,37 @@ _target_namespaces_auto_detect() {
   true
 }
 
+_target_mirrors_auto_detect() {
+
+  local \
+    _gitlab_dir \
+    _token \
+    _tokens \
+    _msg=()
+  _gitlab_dir="${HOME}/.config/gitlab.com"
+  if [[ ! -e "${_gitlab_dir}"/* ]]; then
+    target_mirrors+=(
+      "github"
+      "gitlab"
+    )
+  else
+    _tokens="$(
+      ls
+        "${_gitlab_dir}")"
+    if [[ "${_tokens}" != "" ]]; then
+      target_mirrors+=(
+        "gitlab"
+        "github"
+      )
+    else
+      target_mirrors+=(
+        "github"
+        "gitlab"
+      )
+    fi
+  fi
+}
+
 # Set defaults and, if present, overrides
 # from fur command line option parameters
 _set_overrides() {
@@ -1339,10 +1371,6 @@ _set_overrides() {
     "false"
   _set_override \
     "target" \
-    "mirror" \
-    "gitlab"
-  _set_override \
-    "target" \
     "namespace" \
     "themartiancompany"
   _set_override \
@@ -1355,6 +1383,10 @@ _set_overrides() {
     "fur"
   _target_namespaces_auto_detect
   _mirror_type_auto_detect
+  _set_override \
+    "target" \
+    "mirror" \
+    "gitlab"
   _set_override \
     "git" \
     "protocol" \
