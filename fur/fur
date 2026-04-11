@@ -1273,18 +1273,24 @@ _target_namespaces_auto_detect() {
   local \
     _gitlab_dir \
     _token \
+    _tokens \
     _msg=()
   _gitlab_dir="${HOME}/.config/gitlab.com"
-  if [[ -e "${_gitlab_dir}" ]]; then
-    for _token in "${_gitlab_dir}/"*; do
-      _namespace_filename="$(
-        basename \
-          "${_token}")"
-      _namespace="${_namespace_filename%*.txt}"
-      target_namespaces+=(
-        "${_namespace}"
-      )
-    done
+  if [[ -e "${_gitlab_dir}"/* ]]; then
+    _tokens="$(
+      ls
+        "${_gitlab_dir}")"
+    if [[ "${_tokens}" != "" ]]; then
+      for _token in "${_gitlab_dir}/"*; do
+        _namespace_filename="$(
+          basename \
+            "${_token}")"
+        _namespace="${_namespace_filename%*.txt}"
+        target_namespaces+=(
+          "${_namespace}"
+        )
+      done
+    fi
   fi
   _msg=(
     "Found namespaces '${target_namespaces[*]}'."
