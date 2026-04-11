@@ -674,6 +674,9 @@ _fur_tree_get() {
     _pkg_file \
     _pkg_filename \
     _msg=()
+  if [[ "${_target_platform}" == "android" ]]; then
+    _target_platform="termux"
+  fi
   if [[ "${quiet}" == "y" ]]; then
     _clone_opts+=(
       --quiet
@@ -720,7 +723,7 @@ _fur_tree_get() {
       basename \
         "${_dir}")"
     if [[ ! -d "${_dir}" || \
-          "${_platform}" != "${_target_platform}" ]]; then
+          ( "${_platform}" != "${_target_platform}" ]]; then
       rm \
         -rf \
         "${_dir}"
