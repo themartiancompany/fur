@@ -1302,7 +1302,6 @@ _target_namespaces_auto_detect() {
 }
 
 _target_mirrors_auto_detect() {
-
   local \
     _gitlab_dir \
     _token \
@@ -1383,10 +1382,11 @@ _set_overrides() {
     "fur"
   _target_namespaces_auto_detect
   _mirror_type_auto_detect
+  _target_mirrors_auto_detect
   _set_override \
     "target" \
     "mirror" \
-    "gitlab"
+    "${target_mirrors[0]}"
   _set_override \
     "git" \
     "protocol" \
