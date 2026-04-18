@@ -1063,6 +1063,92 @@ _fur_gitlab_release_get() {
     "${_old_pwd}"
 }
 
+_release_latest_get_tree() {
+  true
+}
+
+_release_latest_get_ci() {
+  local \
+    _package="${1}" \
+    _target_mirror="${2}" \
+    _target_namespace="${3}" \
+    _gur_opts=()
+  _gur_opts+=(
+    -m
+      "${_target_mirror}"
+    -N
+      "${target_namespace}"
+    -d
+      "curl"
+  )
+  # Retrieving latest release
+  # using the gur this way it's
+  # ill-posed as a release is a
+  # 'pkgver-pkgrel' string, so since
+  # it sorts the results using sort -V
+  # which can fail in cases such as
+  # '2.9-1'
+  # '2.9a-1'
+  # there aren't packages meeting
+  # this edge case for now on
+  # 'themartiancompany' namespaces
+  # but really it needs to be fixed
+  # at a later point
+  _release="$(
+    gur \
+      "${_gur_opts[@]}" \
+      get \
+        releases \
+        "${_package}" |
+      tail \
+        -n \
+          1)"
+}
+
+_package_release_latest_get() {
+  local \
+    _package="${1}" \
+    _target_mirror="${2}" \
+    _target_namespace="${3}" \
+    _mirror_type \
+    _release
+  for _mirror_type in "${_mirror_types[@]}"; do
+    "_release_latest_get_${_mirror_type}" \
+      "${_package}" \
+      "${_target_mirror}" \
+      "${_target_namespace}"
+    _release_latest["${_mirror_type}"]="${_release}"
+    # Mixed sources retrieval not allowed for now
+    break
+  done
+}
+
+_package_local_check() {
+  local \
+    _package="${1}" \
+    _target_namespace="${2}" \
+    _tag="${3}" \
+    _gur_opts=() \
+    _assets_names=()
+  _gur_opts+=(
+    -m
+      "github"
+    -N
+      "${_target_namespace}"
+    -d
+      "curl"
+  )
+  _assets_names=( $(
+    gur \
+      get \
+        assets_names \
+          "${_package}" \
+          "${_tag}")
+  )
+  echo \
+    "${_assets_names[*]}"
+}
+
 # $@: packages
 _fur() {
   local \
@@ -1111,8 +1197,11 @@ _fur() {
   _packages=(
     "$@"
   )
+  declare \
+    -A \
+    "_release_latest"
   _msg=(
-    "Installing ${_packages[*]}."
+    "Installing '${_packages[*]}'."
   )
   _msg_info \
     "${_msg[*]}"
@@ -1126,6 +1215,14 @@ _fur() {
   while \
     (( "${#_packages_to_retrieve[@]}" > 0 )); do
     _package="${_packages_to_retrieve[0]}"
+    _package_release_latest_get \
+      "${_package}" \
+      "${_target_mirror}" \
+      "${_target_namespace}"
+    _package_local_check \
+      "${_package}" \
+      "${_target_namespace}" \
+      "${_release_latest["${_mirror_types[0]}"]}"
     _msg=(
       "Retrieving package '${_package}'..."
     )
