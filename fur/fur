@@ -1130,9 +1130,15 @@ _package_local_check() {
     _tag="${3}" \
     _gur_opts=() \
     _assets_names=()
+  _msg=(
+    "Getting asset names for"
+    "release '${_tag}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
   _gur_opts+=(
     -m
-      "github"
+      "${_target_mirror}"
     -N
       "${_target_namespace}"
     -d
@@ -1140,6 +1146,7 @@ _package_local_check() {
   )
   _assets_names=( $(
     gur \
+      "${_gur_opts[@]}" \
       get \
         assets_names \
           "${_package}" \
@@ -1219,6 +1226,8 @@ _fur() {
       "${_package}" \
       "${_target_mirror}" \
       "${_target_namespace}"
+    echo \
+      "${_release_latest["${_mirror_types[0]}"]}"
     _package_local_check \
       "${_package}" \
       "${_target_namespace}" \
