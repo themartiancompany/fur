@@ -1210,9 +1210,15 @@ _package_local_check() {
         )
         _msg_info \
           "${_msg[*]}"
+      elif [[ "${_sum_local}" != "${_sum_remote}" ]]; then
+        _msg=(
+          "File checksum incorrect, re-downloading."
+        )
+        _msg_info \
+          "${_msg[*]}"
       fi
-      # TODO: implement sums retrieval in
-      #       the gur and verification here
+      # TODO:
+      # implement signature verification
     fi
   done
   echo \
