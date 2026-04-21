@@ -1145,6 +1145,7 @@ _package_local_check() {
     _tag="${3}" \
     _gur_opts=() \
     _asset \
+    _asset_path \
     _assets_names=()
   _msg=(
     "Getting asset names for"
@@ -1172,28 +1173,44 @@ _package_local_check() {
     -lsh \
     "${_repo_dir}"
   for _asset in "${_assets_names[@]}"; do
+    _asset_path="${_repo_dir}/${_asset}"
     _msg=(
       "Asset '${_asset}'."
     )
     _msg_info \
       "${_msg[*]}"
-    if [[ -e "${_repo_dir}/${_asset}" ]]; then
+    if [[ -e "${_asset_path}" ]]; then
       _msg=(
-        "Package '${_asset}' already"
+        "Package '${_asset}' with path"
+        "'${_asset_path}' already"
         "downloaded."
       )
       _msg_info \
         "${_msg[*]}"
-      _sum="$(
+      _sum_remote="$(
         gur \
           "${_gur_opts[@]}" \
-          sum \
-            "${_package}" \
-            "${_tag}" \
-            "${_asset}")"
+          get \
+            sum \
+              "${_package}" \
+              "${_tag}" \
+              "${_asset}")"
+      fi
       _msg=(
-        "Remote sum: ${_sum}."
+        "Remote sum: ${_sum_remote}."
       )
+      _sum_local="$(
+        sha256sum \
+          "${_asset_path}" |
+          awk \
+            '{print $1}')"
+      if [[ "${_sum_local}" == "${_sum_remote}" ]]; then
+        _msg=(
+          "File checksum correct."
+        )
+        _msg_info \
+          "${_msg[*]}"
+      fi
       # TODO: implement sums retrieval in
       #       the gur and verification here
     fi
