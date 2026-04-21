@@ -1120,6 +1120,13 @@ _package_release_latest_get() {
     _target_namespace="${3}" \
     _mirror_type \
     _release
+  _msg=(
+    "Getting latest release for"
+    "package '${_package}' on"
+    "namespace '${_target_namespace}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
   for _mirror_type in "${_mirror_types[@]}"; do
     "_release_latest_get_${_mirror_type}" \
       "${_package}" \
@@ -1161,7 +1168,15 @@ _package_local_check() {
           "${_package}" \
           "${_tag}")
   )
-  for _asset in "${_asset_names[@]}"; do
+  ls \
+    -lsh \
+    "${_repo_dir}"
+  for _asset in "${_assets_names[@]}"; do
+    _msg=(
+      "Asset '${_asset}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
     if [[ -e "${_repo_dir}/${_asset}" ]]; then
       _msg=(
         "Package '${_asset}' already"
@@ -1169,6 +1184,16 @@ _package_local_check() {
       )
       _msg_info \
         "${_msg[*]}"
+      _sum="$(
+        gur \
+          "${_gur_opts[@]}" \
+          sum \
+            "${_package}" \
+            "${_tag}" \
+            "${_asset}")"
+      _msg=(
+        "Remote sum: ${_sum}."
+      )
       # TODO: implement sums retrieval in
       #       the gur and verification here
     fi
@@ -1247,8 +1272,10 @@ _fur() {
       "${_package}" \
       "${_target_mirror}" \
       "${_target_namespace}"
-    echo \
-      "${_release_latest["${_mirror_types[0]}"]}"
+    _msg=(
+      "Latest release:"
+      "'${_release_latest["${_mirror_types[0]}"]}'."
+    )
     _package_local_check \
       "${_package}" \
       "${_target_namespace}" \
