@@ -1075,6 +1075,25 @@ _release_latest_get_tree() {
   true
 }
 
+_release_latest_get_ci_debug() {
+  local \
+    _msg=()
+  _msg=(
+    "Getting all releases"
+    "with verbose."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  if [[ "${quiet}" == "n" ]]; then 
+    gur \
+      -v \
+      "${_gur_opts[@]}" \
+      get \
+        releases \
+        "${_package}"
+  fi
+}
+
 _release_latest_get_ci() {
   local \
     _package="${1}" \
@@ -1102,6 +1121,9 @@ _release_latest_get_ci() {
   # 'themartiancompany' namespaces
   # but really it needs to be fixed
   # at a later point
+  # if [[ "${quiet}" == "n" ]]; then 
+  #   _release_latest_get_ci_debug
+  # fi
   _release="$(
     gur \
       "${_gur_opts[@]}" \
@@ -1169,9 +1191,6 @@ _package_local_check() {
           "${_package}" \
           "${_tag}")
   )
-  ls \
-    -lsh \
-    "${_repo_dir}"
   for _asset in "${_assets_names[@]}"; do
     _asset_path="${_repo_dir}/${_asset}"
     _msg=(
@@ -1209,9 +1228,13 @@ _package_local_check() {
         )
         _msg_info \
           "${_msg[*]}"
+        # the removal should happen
+        # only if and only if all the correct targets
+        # are downloaded not just one
         _array_remove \
           "_packages_to_retrieve" \
           "${_package}"
+        _retrieved="true"
       elif [[ "${_sum_local}" != "${_sum_remote}" ]]; then
         _msg=(
           "File checksum incorrect, re-downloading."
@@ -1223,8 +1246,8 @@ _package_local_check() {
       # implement signature verification
     fi
   done
-  echo \
-    "${_assets_names[*]}"
+  # echo \
+  #   "${_assets_names[*]}"
 }
 
 # $@: packages
@@ -1256,6 +1279,7 @@ _fur() {
     _git_opts=() \
     _pkg \
     _url \
+    _retrieved \
     _msg=()
   for _mirror_type \
     in $(seq \
@@ -1290,38 +1314,87 @@ _fur() {
   _packages_to_retrieve+=(
     "${_packages[@]}"
   )
+  _packages_to_retrieve_length="${#_packages_to_retrieve[@]}"
   while \
-    (( "${#_packages_to_retrieve[@]}" > 0 )); do
-    _package="${_packages_to_retrieve[0]}"
-    _package_release_latest_get \
-      "${_package}" \
-      "${_target_mirror}" \
-      "${_target_namespace}"
+    (( 0 < "${_packages_to_retrieve_length}" )); do
     _msg=(
-      "Latest release:"
-      "'${_release_latest["${_mirror_types[0]}"]}'."
-    )
-    _package_local_check \
-      "${_package}" \
-      "${_target_namespace}" \
-      "${_release_latest["${_mirror_types[0]}"]}"
-    _msg=(
-      "Retrieving package '${_package}'..."
+      "Retrieval queue: '${_packages_to_retrieve[*]}'"
     )
     _msg_info \
       "${_msg[*]}"
-    "_fur_${_mirror_types[0]}_get" \
-      "${_package}" \
-      "${_target_mirror}" \
-      "${_repo_dir}"
-    _packages_to_retrieve=()
-    for _pkg in "${_packages[@]}"; do
-      if [[ "${_pkg}" != "${_package}" ]]; then
-        _packages_to_retrieve+=(
-          "${_pkg}"
-        )
+    _package="${_packages_to_retrieve[0]}"
+    _packages_to_retrieve_length="${#_packages_to_retrieve[@]}"
+    if [[ "${_package}" != "" ]]; then
+      _package_release_latest_get \
+        "${_package}" \
+        "${_target_mirror}" \
+        "${_target_namespace}"
+      _msg=(
+        "Latest release:"
+        "'${_release_latest["${_mirror_types[0]}"]}'."
+      )
+      _package_local_check \
+        "${_package}" \
+        "${_target_namespace}" \
+        "${_release_latest["${_mirror_types[0]}"]}"
+      if [[ ! -v "_packages_to_retrieve" ]]; then
+        declare \
+          -a \
+          _packages_to_retrieve
+        if [[ ! -v "_packages_to_retrieve" ]]; then
+          _msg=(
+            "Array '_packages_to_retrieve' array"
+            "undefined."
+          )
+          _msg_error \
+            "${_msg[*]}" \
+            1
+        fi
       fi
-    done
+      echo "${_packages_to_retrieve[@]}"
+      if [[ "${_packages_to_retrieve[*]}" == "" ]]; then
+        _packages_to_retrieve_length="0"
+      else
+        _packages_to_retrieve_length="${#_packages_to_retrieve[@]}"
+        _msg=(
+          "${_packages_to_retrieve_length}"
+        )
+        _msg_info \
+          "${_msg[*]}"
+        _package="${_packages_to_retrieve[0]}"
+        if [[ "${_retrieved}" == "false" ]]; then
+          _msg=(
+            "Retrieving package '${_package}'..."
+          )
+          _msg_info \
+            "${_msg[*]}"
+          "_fur_${_mirror_types[0]}_get" \
+            "${_package}" \
+            "${_target_mirror}" \
+            "${_repo_dir}"
+          _packages_to_retrieve=()
+          for _pkg in "${_packages[@]}"; do
+            if [[ "${_pkg}" != "${_package}" ]]; then
+              _packages_to_retrieve+=(
+                "${_pkg}"
+              )
+            fi
+          done
+        fi
+      fi
+    else
+      _array_remove \
+        "_packages_to_retrieve" \
+        ""
+      _packages_to_retrieve_length="${#_packages_to_retrieve[@]}"
+      _msg=(
+        "Empty entry."
+        "Packages to retrieve length"
+        "'${_packages_to_retrieve_length}'."
+      )
+      _msg_info \
+        "${_msg[*]}"
+    fi
   done
   # for _pkg \
   #   in "${_packages[@]}"; do
