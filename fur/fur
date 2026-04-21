@@ -2,24 +2,29 @@
 
 # SPDX-License-Identifier: AGPL-3.0
 
-#    ----------------------------------------------------------------------
+#    -----------------------------------------------------
 #    Copyright © 2024, 2025, 2026  Pellegrino Prevete
 #
 #    All rights reserved
-#    ----------------------------------------------------------------------
+#    -----------------------------------------------------
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU Affero General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+#    This program is free software: you can redistribute
+#    it and/or modify it under the terms of the
+#    GNU Affero General Public License as published by
+#    the Free Software Foundation, either version 3 of
+#    the License, or (at your option) any later version.
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU Affero General Public License for more details.
+#    This program is distributed in the hope that it
+#    will be useful, but WITHOUT ANY WARRANTY;
+#    without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#    See the GNU Affero General Public License for
+#    more details.
 #
-#    You should have received a copy of the GNU Affero General Public License
-#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#    You should have received a copy of the
+#    GNU Affero General Public License
+#    along with this program.
+#    If not, see <https://www.gnu.org/licenses/>.
 
 _bin="$(
   dirname \
@@ -627,22 +632,25 @@ _package_retrieved() {
     _array=() \
     _remaining \
     _msg=()
-  for _remaining in "${_packages_to_retrieve[@]}"; do
-    if [[ "${_remaining}" != "${_pkgname}" ]]; then
-      _array+=(
-        "${_remaining}"
-      )
-    elif [[ "${_remaining}" == "${_pkgname}" ]]; then
-      _msg=(
-        "Package '${_pkg}' retrieved."
-      )
-      _msg_info \
-        "${_msg[*]}"
-    fi
-  done
-  _packages_to_retrieve=(
-    "${_array[@]}"
-  )
+  _array_remove \
+    "_packages_to_retrieve" \
+    "${_pkgname}"
+  # for _remaining in "${_packages_to_retrieve[@]}"; do
+  #   if [[ "${_remaining}" != "${_pkgname}" ]]; then
+  #     _array+=(
+  #       "${_remaining}"
+  #     )
+  #   elif [[ "${_remaining}" == "${_pkgname}" ]]; then
+  #     _msg=(
+  #       "Package '${_pkg}' retrieved."
+  #     )
+  #     _msg_info \
+  #       "${_msg[*]}"
+  #   fi
+  # done
+  # _packages_to_retrieve=(
+  #   "${_array[@]}"
+  # )
   if [[ "${_packages_to_retrieve[*]}" != "" ]]; then
     _msg=(
       "Left '${_packages_to_retrieve[@]}'."
@@ -1129,6 +1137,7 @@ _package_local_check() {
     _target_namespace="${2}" \
     _tag="${3}" \
     _gur_opts=() \
+    _asset \
     _assets_names=()
   _msg=(
     "Getting asset names for"
@@ -1152,6 +1161,18 @@ _package_local_check() {
           "${_package}" \
           "${_tag}")
   )
+  for _asset in "${_asset_names[@]}"; do
+    if [[ -e "${_repo_dir}/${_asset}" ]]; then
+      _msg=(
+        "Package '${_asset}' already"
+        "downloaded."
+      )
+      _msg_info \
+        "${_msg[*]}"
+      # TODO: implement sums retrieval in
+      #       the gur and verification here
+    fi
+  done
   echo \
     "${_assets_names[*]}"
 }
