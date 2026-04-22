@@ -1333,8 +1333,11 @@ _fur() {
     )
     _msg_info \
       "${_msg[*]}"
-    _package="${_packages_to_retrieve[0]}"
+    _package=""
     _packages_to_retrieve_length="${#_packages_to_retrieve[@]}"
+    if (( 0 < "${_packages_to_retrieve_length}" )); then
+      _package="${_packages_to_retrieve[0]}"
+    fi
     if [[ "${_package}" == "" ]]; then
       _array_remove \
         "_packages_to_retrieve" \
