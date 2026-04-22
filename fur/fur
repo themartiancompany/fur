@@ -1072,7 +1072,16 @@ _fur_gitlab_release_get() {
 }
 
 _release_latest_get_tree() {
-  true
+  local \
+    _msg=()
+  _msg=(
+    "Getting latest release for"
+    "package from 'tree' type"
+    "not implemented."
+  )
+  _msg_warning \
+    "${_msg[*]}"
+  _release=""
 }
 
 _release_latest_get_ci_debug() {
