@@ -1333,7 +1333,19 @@ _fur() {
       "${_msg[*]}"
     _package="${_packages_to_retrieve[0]}"
     _packages_to_retrieve_length="${#_packages_to_retrieve[@]}"
-    if [[ "${_package}" != "" ]]; then
+    if [[ "${_package}" == "" ]]; then
+      _array_remove \
+        "_packages_to_retrieve" \
+        ""
+      _packages_to_retrieve_length="${#_packages_to_retrieve[@]}"
+      _msg=(
+        "Empty entry."
+        "Packages to retrieve length"
+        "'${_packages_to_retrieve_length}'."
+      )
+      _msg_info \
+        "${_msg[*]}"
+    elif [[ "${_package}" != "" ]]; then
       _package_release_latest_get \
         "${_package}" \
         "${_target_mirror}" \
@@ -1374,20 +1386,28 @@ _fur() {
             1
         fi
       fi
-      echo "${_packages_to_retrieve[@]}"
       if [[ "${_packages_to_retrieve[*]}" == "" ]]; then
         _packages_to_retrieve_length="0"
       else
         _packages_to_retrieve_length="${#_packages_to_retrieve[@]}"
         _msg=(
-          "${_packages_to_retrieve_length}"
+          "Remaining pack: ${_packages_to_retrieve_length}"
         )
         _msg_info \
           "${_msg[*]}"
         _package="${_packages_to_retrieve[0]}"
-        if [[ "${_retrieved}" == "false" ]]; then
+        if [[ "${_retrieved}" == "true" ]]; then
           _msg=(
-            "Retrieving package '${_package}'..."
+            "Package '${_package}'"
+            "already retrieved"
+            "(left '${_packages_to_retrieve_length}')..."
+          )
+          _msg_info \
+            "${_msg[*]}"
+        elif [[ "${_retrieved}" == "false" ]]; then
+          _msg=(
+            "Retrieving '${_package}'"
+            "(left '${_packages_to_retrieve_length}' packages)..."
           )
           _msg_info \
             "${_msg[*]}"
@@ -1405,18 +1425,6 @@ _fur() {
           done
         fi
       fi
-    else
-      _array_remove \
-        "_packages_to_retrieve" \
-        ""
-      _packages_to_retrieve_length="${#_packages_to_retrieve[@]}"
-      _msg=(
-        "Empty entry."
-        "Packages to retrieve length"
-        "'${_packages_to_retrieve_length}'."
-      )
-      _msg_info \
-        "${_msg[*]}"
     fi
   done
   # for _pkg \
