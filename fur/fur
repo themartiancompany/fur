@@ -1342,7 +1342,12 @@ _fur() {
       _array_remove \
         "_packages_to_retrieve" \
         ""
-      _packages_to_retrieve_length="${#_packages_to_retrieve[@]}"
+      if [[ "${_packages_to_retrieve[*]}" != "" ]]; then
+        _packages_to_retrieve_length="${#_packages_to_retrieve[@]}"
+      else
+        _packages_to_retrieve_length=0
+        _packages_to_retrieve=()
+      fi
       _msg=(
         "Empty entry."
         "Packages to retrieve length"
