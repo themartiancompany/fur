@@ -1338,14 +1338,24 @@ _fur() {
         "${_package}" \
         "${_target_mirror}" \
         "${_target_namespace}"
+      _release="${_release_latest["${_mirror_types[0]}"]}"
+      if [[ "${_release}" == "" ]]; then
+        _msg=(
+          "Failed to retrieve latest release."
+        )
+        _msg_error \
+          "${_msg[*]}" \
+          0
+      elif [[ "${_release}" != "" ]]; then
+        _package_local_check \
+          "${_package}" \
+          "${_target_namespace}" \
+          "${_release}"
+      fi
       _msg=(
         "Latest release:"
-        "'${_release_latest["${_mirror_types[0]}"]}'."
+        "'${_release}'."
       )
-      _package_local_check \
-        "${_package}" \
-        "${_target_namespace}" \
-        "${_release_latest["${_mirror_types[0]}"]}"
       if [[ ! -v "_packages_to_retrieve" ]]; then
         declare \
           -g \
