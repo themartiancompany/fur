@@ -634,13 +634,13 @@ _package_retrieved() {
     _msg=()
   _array_remove \
     "_packages_to_retrieve" \
-    "${_pkgname}"
+    "${_pkg}"
   # for _remaining in "${_packages_to_retrieve[@]}"; do
-  #   if [[ "${_remaining}" != "${_pkgname}" ]]; then
+  #   if [[ "${_remaining}" != "${_pkg}" ]]; then
   #     _array+=(
   #       "${_remaining}"
   #     )
-  #   elif [[ "${_remaining}" == "${_pkgname}" ]]; then
+  #   elif [[ "${_remaining}" == "${_pkg}" ]]; then
   #     _msg=(
   #       "Package '${_pkg}' retrieved."
   #     )
