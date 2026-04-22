@@ -1121,9 +1121,9 @@ _release_latest_get_ci() {
   # 'themartiancompany' namespaces
   # but really it needs to be fixed
   # at a later point
-  # if [[ "${quiet}" == "n" ]]; then 
-  #   _release_latest_get_ci_debug
-  # fi
+  if [[ "${quiet}" == "n" ]]; then 
+    _release_latest_get_ci_debug
+  fi
   _release="$(
     gur \
       "${_gur_opts[@]}" \
@@ -1339,8 +1339,9 @@ _fur() {
         "${_release_latest["${_mirror_types[0]}"]}"
       if [[ ! -v "_packages_to_retrieve" ]]; then
         declare \
+          -g \
           -a \
-          _packages_to_retrieve
+          "_packages_to_retrieve"
         if [[ ! -v "_packages_to_retrieve" ]]; then
           _msg=(
             "Array '_packages_to_retrieve' array"
