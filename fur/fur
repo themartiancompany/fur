@@ -884,12 +884,17 @@ _fur_github_release_get() {
   local \
     _pkg="${1}" \
     _repo_dir="${2}" \
+    _tag \
     _msg=() \
     _old_pwd \
     _gur_opts=() \
     _os \
     _arch \
     _pkgs=()
+  _tag=""
+  if (( 2 < "${_tag}" )); then
+    _tag="${3}"
+  fi
   _os="$(
     uname \
       -o)"
