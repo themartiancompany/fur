@@ -1356,6 +1356,7 @@ _fur() {
       _msg_info \
         "${_msg[*]}"
     elif [[ "${_package}" != "" ]]; then
+      _retrieved="false"
       _package_release_latest_get \
         "${_package}" \
         "${_target_mirror}" \
@@ -1401,11 +1402,14 @@ _fur() {
       else
         _packages_to_retrieve_length="${#_packages_to_retrieve[@]}"
         _msg=(
-          "Remaining pack: ${_packages_to_retrieve_length}"
+          "Remaining packages:"
+            "${_packages_to_retrieve_length}"
         )
         _msg_info \
           "${_msg[*]}"
         _package="${_packages_to_retrieve[0]}"
+        if [[ ! -v "_retrieved" ]]; then
+        fi
         if [[ "${_retrieved}" == "true" ]]; then
           _msg=(
             "Package '${_package}'"
