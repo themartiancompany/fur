@@ -888,6 +888,7 @@ _fur_github_release_get() {
     _msg=() \
     _old_pwd \
     _gur_opts=() \
+    _gur_args=() \
     _os \
     _arch \
     _pkgs=()
@@ -923,11 +924,19 @@ _fur_github_release_get() {
     "${_msg[*]}"
   cd \
     "${_repo_dir}"
+  _gur_args+=(
+    "${_pkg}"
+  )
+  if [[ "${_tag}" != "" ]]; then
+    _gur_args+=(
+      "${_tag}"
+    )
+  fi
   gur \
     "${_gur_opts[@]}" \
     get \
       release \
-        "${_pkg}"
+        "${_gur_args[@]}"
   if [[ "${_os}" == "Android" ]]; then
     rm \
       -rf \
