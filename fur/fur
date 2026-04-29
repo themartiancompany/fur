@@ -893,7 +893,7 @@ _fur_github_release_get() {
     _arch \
     _pkgs=()
   _tag=""
-  if (( 2 < "${_tag}" )); then
+  if (( 2 < "${#}" )); then
     _tag="${3}"
   fi
   _os="$(
