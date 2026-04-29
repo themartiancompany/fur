@@ -1356,7 +1356,9 @@ _fur() {
       _msg_info \
         "${_msg[*]}"
     elif [[ "${_package}" != "" ]]; then
-      _retrieved="false"
+      if [[ ! -v "_retrieved" ]]; then
+        _retrieved="false"
+      fi
       _package_release_latest_get \
         "${_package}" \
         "${_target_mirror}" \
@@ -1408,8 +1410,6 @@ _fur() {
         _msg_info \
           "${_msg[*]}"
         _package="${_packages_to_retrieve[0]}"
-        if [[ ! -v "_retrieved" ]]; then
-        fi
         if [[ "${_retrieved}" == "true" ]]; then
           _msg=(
             "Package '${_package}'"
