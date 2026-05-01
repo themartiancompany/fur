@@ -1131,7 +1131,7 @@ _release_latest_get_ci() {
     -N
       "${target_namespace}"
     -d
-      "gh"
+      "curl"
   )
   # Retrieving latest release
   # using the gur this way it's
