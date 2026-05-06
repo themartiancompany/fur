@@ -629,28 +629,28 @@ _depends_check() {
 _package_retrieved() {
   local \
     _pkg="${1}" \
-    _array=() \
     _remaining \
+    _packages_to_retrieve_new=() \
     _msg=()
-  _array_remove \
-    "_packages_to_retrieve" \
-    "${_pkg}"
-  # for _remaining in "${_packages_to_retrieve[@]}"; do
-  #   if [[ "${_remaining}" != "${_pkg}" ]]; then
-  #     _array+=(
-  #       "${_remaining}"
-  #     )
-  #   elif [[ "${_remaining}" == "${_pkg}" ]]; then
-  #     _msg=(
-  #       "Package '${_pkg}' retrieved."
-  #     )
-  #     _msg_info \
-  #       "${_msg[*]}"
-  #   fi
-  # done
-  # _packages_to_retrieve=(
-  #   "${_array[@]}"
-  # )
+  # _array_remove \
+  #   "_packages_to_retrieve" \
+  #   "${_pkg}"
+  for _remaining in "${_packages_to_retrieve[@]}"; do
+    if [[ "${_remaining}" != "${_pkg}" ]]; then
+      _packages_to_retrieve_new+=(
+        "${_remaining}"
+      )
+    elif [[ "${_remaining}" == "${_pkg}" ]]; then
+      _msg=(
+        "Package '${_pkg}' retrieved."
+      )
+      _msg_info \
+        "${_msg[*]}"
+    fi
+  done
+  _packages_to_retrieve=(
+    "${_packages_to_retrieve_new[@]}"
+  )
   if [[ "${_packages_to_retrieve[*]}" != "" ]]; then
     _msg=(
       "Left '${_packages_to_retrieve[@]}'."
@@ -896,18 +896,16 @@ _fur_github_release_get() {
   if (( 2 < "${#}" )); then
     _tag="${3}"
   fi
-  _os="$(
-    uname \
-      -o)"
-  _arch="$(
-    uname \
-      -m)"
   if [[ "${quiet}" == "n" ]]; then
     _gur_opts+=(
       -v
     )
   fi
   _gur_opts+=(
+    -A
+      "${_target_arch}"
+    -P
+      "${_target_platform}"
     -N
       "${_target_namespace}"
     -m
@@ -1130,8 +1128,8 @@ _release_latest_get_ci() {
       "${_target_mirror}"
     -N
       "${target_namespace}"
-    -d
-      "curl"
+    # -d
+    #   "curl"
   )
   # Retrieving latest release
   # using the gur this way it's
@@ -1257,21 +1255,8 @@ _package_local_check() {
         # the removal should happen
         # only if and only if all the correct targets
         # are downloaded not just one
-        _packages_to_retrieve_new=(
-          "${_packages_to_retrieve[@]}"
-        )
-        _packages_to_retrieve=()
-        for _pkg in "${_packages_to_retrieve_new[@]}"; do
-          if [[ "${_pkg}" != "${_package}" ]]; then
-            _packages_to_retrieve+=(
-              "${_pkg}"
-            )
-          fi
-        done
-        # _array_remove \
-        #   "_packages_to_retrieve" \
-        #   "${_package}"
-        # _retrieved="true"
+        _package_retrieved \
+          "${_package}"
       elif [[ "${_sum_local}" != "${_sum_remote}" ]]; then
         _msg=(
           "File checksum incorrect, re-downloading."
@@ -1365,9 +1350,11 @@ _fur() {
       _package="${_packages_to_retrieve[0]}"
     fi
     if [[ "${_package}" == "" ]]; then
-      _array_remove \
-        "_packages_to_retrieve" \
+      _package_retrieved \
         ""
+      # _array_remove \
+      #   "_packages_to_retrieve" \
+      #   ""
       if [[ "${_packages_to_retrieve[*]}" != "" ]]; then
         _packages_to_retrieve_length="${#_packages_to_retrieve[@]}"
       else
@@ -1444,16 +1431,8 @@ _fur() {
           )
           _msg_info \
             "${_msg[*]}"
-          # TODO: 
-          # to be replaced with _package_retrieved
-          _packages_to_retrieve=()
-          for _pkg in "${_packages[@]}"; do
-            if [[ "${_pkg}" != "${_package}" ]]; then
-              _packages_to_retrieve+=(
-                "${_pkg}"
-              )
-            fi
-          done
+          _package_retrieved \
+            "${_package}"
         elif [[ "${_retrieved}" == "false" ]]; then
           _msg=(
             "Retrieving '${_package}'"
@@ -1467,14 +1446,8 @@ _fur() {
             "${_repo_dir}"
           # TODO:
           #   to be replaced with _package_retrieved
-          _packages_to_retrieve=()
-          for _pkg in "${_packages[@]}"; do
-            if [[ "${_pkg}" != "${_package}" ]]; then
-              _packages_to_retrieve+=(
-                "${_pkg}"
-              )
-            fi
-          done
+          _package_retrieved \
+            "${_package}"
         fi
       fi
     fi
