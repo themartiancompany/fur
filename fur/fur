@@ -890,7 +890,6 @@ _fur_github_release_get() {
     _gur_opts=() \
     _gur_args=() \
     _os \
-    _arch \
     _pkgs=()
   _tag=""
   if (( 2 < "${#}" )); then
@@ -903,7 +902,7 @@ _fur_github_release_get() {
   fi
   _gur_opts+=(
     -A
-      "${_target_arch}"
+      "${_arch}"
     -P
       "${_target_platform}"
     -N
@@ -935,49 +934,49 @@ _fur_github_release_get() {
     get \
       release \
         "${_gur_args[@]}"
-  if [[ "${_os}" == "Android" ]]; then
-    rm \
-      -rf \
-      "dogeos-gnu"*".pkg.tar"* \
-      "dogeos-windows"*".pkg.tar"* || \
-      true
-    # Arch filter
-    if [[ "${_arch}" != "any" ]]; then
-      if [[ "${_arch}" == "aarch64" ]]; then
-        rm \
-          -rf \
-          "dogeos-android"*"-arm.pkg.tar"* \
-          "dogeos-android"*"-i686.pkg.tar"* \
-          "dogeos-android"*"-x86_64.pkg.tar"* || \
-        true
-      elif [[ "${_arch}" == "arm" ]]; then
-        rm \
-          -rf \
-          "dogeos-android"*"-aarch64.pkg.tar"* \
-          "dogeos-android"*"-i686.pkg.tar"* \
-          "dogeos-android"*"-x86_64.pkg.tar"*
-      elif [[ "${_arch}" == "x86_64" ]]; then
-        rm \
-          -rf \
-          "dogeos-android"*"-aarch64.pkg.tar"* \
-          "dogeos-android"*"-arm.pkg.tar"*
-          "dogeos-android"*"-i686.pkg.tar"*
-      else
-        echo \
-          "Architecture: '${_arch}'."
-      fi
-    fi
-  elif [[ "${_os}" == "GNU/Linux" ]]; then
-    rm \
-      -rf \
-      "dogeos-android"*".pkg.tar"* \
-      "dogeos-windows"*".pkg.tar"*
-  elif [[ "${_os}" == "Msys" ]]; then
-    rm \
-      -rf \
-      "dogeos-android"*".pkg.tar"* \
-      "dogeos-gnu"*".pkg.tar"*
-  fi
+  # if [[ "${_os}" == "Android" ]]; then
+  #   rm \
+  #     -rf \
+  #     "dogeos-gnu"*".pkg.tar"* \
+  #     "dogeos-windows"*".pkg.tar"* || \
+  #     true
+  #   # Arch filter
+  #   if [[ "${_arch}" != "any" ]]; then
+  #     if [[ "${_arch}" == "aarch64" ]]; then
+  #       rm \
+  #         -rf \
+  #         "dogeos-android"*"-arm.pkg.tar"* \
+  #         "dogeos-android"*"-i686.pkg.tar"* \
+  #         "dogeos-android"*"-x86_64.pkg.tar"* || \
+  #       true
+  #     elif [[ "${_arch}" == "arm" ]]; then
+  #       rm \
+  #         -rf \
+  #         "dogeos-android"*"-aarch64.pkg.tar"* \
+  #         "dogeos-android"*"-i686.pkg.tar"* \
+  #         "dogeos-android"*"-x86_64.pkg.tar"*
+  #     elif [[ "${_arch}" == "x86_64" ]]; then
+  #       rm \
+  #         -rf \
+  #         "dogeos-android"*"-aarch64.pkg.tar"* \
+  #         "dogeos-android"*"-arm.pkg.tar"*
+  #         "dogeos-android"*"-i686.pkg.tar"*
+  #     else
+  #       echo \
+  #         "Architecture: '${_arch}'."
+  #     fi
+  #   fi
+  # elif [[ "${_os}" == "GNU/Linux" ]]; then
+  #   rm \
+  #     -rf \
+  #     "dogeos-android"*".pkg.tar"* \
+  #     "dogeos-windows"*".pkg.tar"*
+  # elif [[ "${_os}" == "Msys" ]]; then
+  #   rm \
+  #     -rf \
+  #     "dogeos-android"*".pkg.tar"* \
+  #     "dogeos-gnu"*".pkg.tar"*
+  # fi
   _depends_retrieved+=(
     "${_pkg}"
   )
