@@ -441,10 +441,41 @@ _pkg_installed_get() {
 
 _depend_retrieved_get() {
   local \
-    _depend="${1}"
-  if [[ " ${_depends_retrieved[*]} " != *" ${_depend} "* ]]; then
+    _depend="${1}" \
+    _tag \
+    _retrieved
+  _tag=""
+  if (( 1 < "${#}" )); then
+    _tag="${2}"
+  fi
+  _retrieved="false"
+  if [[ "${_tag}" == "" ]]; then
+    _package_release_latest_get \
+      "${_depend}" \
+      "${_target_mirror}" \
+      "${_target_namespace}"
+    _tag="${_release_latest["${_mirror_types[0]}"]}"
+  fi
+  if [[ "${_tag}" == "" ]]; then
+    _msg=(
+      "Dependency '${_depend}'"
+      "unpackaged on the Ur with"
+      "mirror type '${_mirror_types[0]}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
+  elif [[ "${_tag}" != "" ]]; then
+    _package_local_check \
+      "${_depend}" \
+      "${_target_namespace}" \
+      "${_tag}"
+  fi
+  if [[ "${_retrieved}" == "false" && \
+        " ${_depends_retrieved[*]} " != *" ${_depend} "* ]]; then
     _depend_retrieved="false"
-  else
+  elif [[ " ${_depends_retrieved[*]} " == *" ${_depend} "* ]]; then
+    _package_retrieved \
+      "${_depend}"
     _depend_retrieved="true"
   fi
 }
@@ -490,6 +521,19 @@ _depend_resolve() {
     _depend_retrieved \
     _installed \
     _msg=()
+  if [[ "${_depend}" == *".so" ]]; then
+    _depend="${_depend%%*.so}"
+    _msg=(
+      "Dependency '${_depend}'"
+      "seems to be a library,"
+      "skipping as packages"
+      "should always also include the"
+      "name for the package corresponding"
+      "to the needed library."
+    )
+    _msg_info \
+      "${_msg[*]}"
+  fi
   _depend_retrieved_get \
     "${_depend}"
   if [[ "${_depend_retrieved}" == "true" ]]; then
@@ -646,6 +690,7 @@ _package_retrieved() {
       )
       _msg_info \
         "${_msg[*]}"
+      _retrieved="true"
     fi
   done
   _packages_to_retrieve=(
@@ -1186,12 +1231,18 @@ _package_local_check() {
   local \
     _package="${1}" \
     _target_namespace="${2}" \
-    _tag="${3}" \
+    _tag \
     _gur_opts=() \
     _asset \
     _asset_path \
     _assets_names=() \
-    _packages_to_retrieve_new=()
+    _packages_to_retrieve_new=() \
+    _debug
+  _debug="false"
+  _tag=""
+  if (( 2 < "${#}" )); then
+    _tag="${3}"
+  fi
   _msg=(
     "Getting asset names for"
     "release '${_tag}'."
@@ -1216,11 +1267,13 @@ _package_local_check() {
   )
   for _asset in "${_assets_names[@]}"; do
     _asset_path="${_repo_dir}/${_asset}"
-    _msg=(
-      "Asset '${_asset}'."
-    )
-    _msg_info \
-      "${_msg[*]}"
+    if [[ "${_debug}" == "true" ]]; then
+      _msg=(
+        "Asset '${_asset}'."
+      )
+      _msg_info \
+        "${_msg[*]}"
+    fi
     if [[ -e "${_asset_path}" ]]; then
       _msg=(
         "Asset '${_asset}' with path"
@@ -1229,6 +1282,16 @@ _package_local_check() {
       )
       _msg_info \
         "${_msg[*]}"
+      if [[ "${_debug}" == "true" ]]; then
+        gur \
+          -v \
+          "${_gur_opts[@]}" \
+          get \
+            sum \
+              "${_package}" \
+              "${_tag}" \
+              "${_asset}"
+      fi
       _sum_remote="$(
         gur \
           "${_gur_opts[@]}" \
@@ -1240,6 +1303,8 @@ _package_local_check() {
       _msg=(
         "Remote sum: ${_sum_remote}."
       )
+      _msg_info \
+        "${_msg[*]}"
       _sum_local="$(
         sha256sum \
           "${_asset_path}" |
@@ -1256,8 +1321,11 @@ _package_local_check() {
         # are downloaded not just one
         _package_retrieved \
           "${_package}"
+        break
       elif [[ "${_sum_local}" != "${_sum_remote}" ]]; then
         _msg=(
+          "Local file checksum '${_sum_local}',"
+          "remote file checksum '${_sum_remote}'."
           "File checksum incorrect, re-downloading."
         )
         _msg_info \
@@ -1338,22 +1406,31 @@ _fur() {
   _packages_to_retrieve_length="${#_packages_to_retrieve[@]}"
   while \
     (( 0 < "${_packages_to_retrieve_length}" )); do
+    _package=""
+    _retrieved="false"
+    _packages_to_retrieve_length="${#_packages_to_retrieve[@]}"
     _msg=(
       "Retrieval queue: '${_packages_to_retrieve[*]}'"
     )
     _msg_info \
       "${_msg[*]}"
-    _package=""
-    _packages_to_retrieve_length="${#_packages_to_retrieve[@]}"
     if (( 0 < "${_packages_to_retrieve_length}" )); then
       _package="${_packages_to_retrieve[0]}"
     fi
+    _msg=(
+      "Processing package '${_package}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
     if [[ "${_package}" == "" ]]; then
+      _msg=(
+        "Detected empty package in queue,"
+        "removing."
+      )
+      _msg_info \
+        "${_msg[*]}"
       _package_retrieved \
         ""
-      # _array_remove \
-      #   "_packages_to_retrieve" \
-      #   ""
       if [[ "${_packages_to_retrieve[*]}" != "" ]]; then
         _packages_to_retrieve_length="${#_packages_to_retrieve[@]}"
       else
@@ -1361,7 +1438,8 @@ _fur() {
         _packages_to_retrieve=()
       fi
       _msg=(
-        "Empty entry."
+        "Removed empty entry, new queue"
+        "'${_packages_to_retrieve[*]}'."
         "Packages to retrieve length"
         "'${_packages_to_retrieve_length}'."
       )
@@ -1401,6 +1479,7 @@ _fur() {
           -g \
           -a \
           "_packages_to_retrieve"
+        _packages_to_retrieve=()
         if [[ ! -v "_packages_to_retrieve" ]]; then
           _msg=(
             "Array '_packages_to_retrieve' array"
@@ -1408,45 +1487,48 @@ _fur() {
           )
           _msg_error \
             "${_msg[*]}" \
-            1
+            0
         fi
       fi
-      if [[ "${_packages_to_retrieve[*]}" == "" ]]; then
-        _packages_to_retrieve_length="0"
-      else
-        _packages_to_retrieve_length="${#_packages_to_retrieve[@]}"
-        _msg=(
-          "Remaining packages:"
-            "${_packages_to_retrieve_length}"
-        )
-        _msg_info \
-          "${_msg[*]}"
-        _package="${_packages_to_retrieve[0]}"
-        if [[ "${_retrieved}" == "true" ]]; then
+      if [[ "${_retrieved}" == "false" ]] ;then
+        if [[ "${_packages_to_retrieve[*]}" == "" ]]; then
+          _packages_to_retrieve_length="0"
+        else
+          _packages_to_retrieve_length="${#_packages_to_retrieve[@]}"
           _msg=(
-            "Package '${_package}'"
-            "already retrieved"
-            "(left '${_packages_to_retrieve_length}')..."
+            "Remaining packages:"
+              "${_packages_to_retrieve_length}"
           )
           _msg_info \
             "${_msg[*]}"
-          _package_retrieved \
-            "${_package}"
-        elif [[ "${_retrieved}" == "false" ]]; then
-          _msg=(
-            "Retrieving '${_package}'"
-            "(left '${_packages_to_retrieve_length}' packages)..."
-          )
-          _msg_info \
-            "${_msg[*]}"
-          "_fur_${_mirror_types[0]}_get" \
-            "${_package}" \
-            "${_target_mirror}" \
-            "${_repo_dir}"
-          # TODO:
-          #   to be replaced with _package_retrieved
-          _package_retrieved \
-            "${_package}"
+          _package="${_packages_to_retrieve[0]}"
+          _retrieved="false"
+          if [[ "${_retrieved}" == "true" ]]; then
+            _msg=(
+              "Package '${_package}'"
+              "already retrieved"
+              "(left '${_packages_to_retrieve_length}')..."
+            )
+            _msg_info \
+              "${_msg[*]}"
+            _package_retrieved \
+              "${_package}"
+          elif [[ "${_retrieved}" == "false" ]]; then
+            _msg=(
+              "Retrieving '${_package}'"
+              "(left '${_packages_to_retrieve_length}' packages)..."
+            )
+            _msg_info \
+              "${_msg[*]}"
+            "_fur_${_mirror_types[0]}_get" \
+              "${_package}" \
+              "${_target_mirror}" \
+              "${_repo_dir}"
+            # TODO:
+            #   to be replaced with _package_retrieved
+            _package_retrieved \
+              "${_package}"
+          fi
         fi
       fi
     fi
