@@ -90,6 +90,7 @@ _global_variables() {
   repo_name=""
   mirror_types=()
   git_protocol=""
+  retrieval_method=""
   output_dir=""
   cache_clean=""
   color=""
@@ -954,6 +955,8 @@ _fur_github_release_get() {
       "${_target_namespace}"
     -m
       "github"
+    -M
+      "${_retrieval_method}"
   )
   _old_pwd="${PWD}"
   _msg=(
@@ -1355,6 +1358,7 @@ _fur() {
     _mirror_types=() \
     _mirror_type \
     _git_protocol \
+    _retrieval_method \
     _dependencies_check \
     _dependencies_resolve \
     _output_dir \
@@ -1379,12 +1383,13 @@ _fur() {
     shift
   done
   _git_protocol="${11}"
-  _dependencies_check="${12}"
-  _dependencies_resolve="${13}"
-  _output_dir="${14}"
-  _cache_clean="${15}"
+  _retrieval_method="${12}"
+  _dependencies_check="${13}"
+  _dependencies_resolve="${14}"
+  _output_dir="${15}"
+  _cache_clean="${16}"
   shift \
-    15
+    16
   _packages=(
     "$@"
   )
@@ -1761,6 +1766,24 @@ _cache_clean_auto_detect() {
     "${_cache_clean}"
 }
 
+_retrieval_method_auto_detect() {
+  local \
+    _retrieval_method
+  _retrieval_method=""
+  _conf_gh="${HOME}/.config/gh/hosts.yml"
+  _conf="${HOME}/.config/github/${target_namespace},txt"
+  if [[ -e "${_conf_gh}" ]] || \
+     [[ -e "${_conf}" ]]; then
+    _retrieval_method="gh"
+  else
+    _retrieval_method="curl"
+  fi
+  _set_override \
+    "retrieval" \
+    "method" \
+    "${_retrieval_method}"
+}
+
 # Set defaults and, if present, overrides
 # from fur command line option parameters
 _set_overrides() {
@@ -1840,27 +1863,45 @@ _set_overrides() {
     _msg_info \
       "${_msg[*]}"
   fi
+  _retrieval_method_auto_detect
 }
 
 # Shows configuration options.
 _show_config() {
   _msg_info "${app_name} configuration"
   _msg_info "             Install date:   ${install_date}"
-  _msg_info "          Target platform:   ${target_platform}"
-  _msg_info "      Target architecture:   ${target_arch}"
-  _msg_info "          Package manager:   ${package_manager}"
-  _msg_info "             Mirror types:   ${mirror_types[*]}"
-  _msg_info "       Dependencies check:   ${dependencies_check}"
-  _msg_info "   Dependencies resolving:   ${dependencies_resolve}"
+  _msg_info "         Output directory:   ${output_dir}"
   _msg_info "            Download only:   ${download_only}"
   _msg_info "              Clean cache:   ${cache_clean}"
-  _msg_info "           Repo directory:   ${repo_dir}"
-  _msg_info "     Signatures directory:   ${sig_dir}"
+  _msg_info "        Package options:"
+  _msg_info "          Package manager:   ${package_manager}"
+  _msg_info "          Target platform:   ${target_platform}"
+  _msg_info "      Target architecture:   ${target_arch}"
+  _msg_info "        Install options:"
+  _msg_info "       Dependencies check:   ${dependencies_check}"
+  _msg_info "   Dependencies resolving:   ${dependencies_resolve}"
+  _msg_info "         Mirror options:"
   _msg_info "            Target mirror:   ${target_mirror}"
   _msg_info "         Target namespace:   ${target_namespace}"
   _msg_info "          Repository name:   ${repo_name}"
-  _msg_info "         Output directory:   ${output_dir}"
-  _msg_info " To be installed packages:   ${installed_packages[*]}"
+  _msg_info "             Mirror types:   ${mirror_types[*]}"
+  _msg_info "             Git protocol:   ${git_protocol}"
+  _msg_info "         Retrieval method:   ${retrieval_method}"
+  _msg_info "    Application options:"
+  _msg_info "           Repo directory:   ${repo_dir}"
+  _msg_info "     Signatures directory:   ${sig_dir}"
+  _msg_info " Packages to be installed:"
+  _show_config_packages
+
+}
+
+_show_config_packages() {
+  local \
+    _package
+  for _package \
+    in "${installed_packages[@]}"; do
+    _msg_info "                             ${_package}"
+  done
 }
 
 # Show help usage, with an exit status.
@@ -1874,6 +1915,7 @@ _usage() {
       -d '' \
       _usage_text << \
         ENDUSAGETEXT || true
+
 Fallback User Repository.
 
 Usage:
@@ -1883,52 +1925,75 @@ Usage:
     [packages]
 
   options:
-     -w <repo_dir>          Directory containing the fur tree.
-                            To be set when download only is true,
-                            otherwise is temporary.
-                            Default: ${repo_dir}
+
      -d                     Download only (noinstall).
                             Default: ${download_only}
-     -o <output_dir>        Output directory.
+
+     -o <output-dir>        Output directory.
                             Default: ${output_dir}
-     -K <sig_dir>           Signatures keys directory.
-                            Default: ${sig_dir}
-     -D <y/n>               Whether to check for package
-                            dependencies.
-                            Default: ${dependencies_check}
-     -R <y/n>               Resolve missing dependencies.
-                            Default: ${dependencies_resolve}
+
      -T                     Clean cache at the end
                             of the operation.
                             Default: ${cache_clean}
 
-  mirror options:
-     -p <package_manager>   Package manager.
+  install options:
+
+     -D <y/n>               Whether to check for package
+                            dependencies.
+                            Default: ${dependencies_check}
+
+     -R <y/n>               Resolve missing dependencies.
+                            Default: ${dependencies_resolve}
+
+  package options:
+
+     -p <package-manager>   Package manager.
                             Default: ${package_manager}
+
      -P <platform>          Platform for which to retrieve packages,
                             can be 'arch' or 'termux'.
                             Default: ${target_platform}
+
      -A <architecture>      Architecture for which to retrieve packages,
                             can be 'any', 'arm' or 'x86_64'.
                             Default: ${target_arch}
 
   mirror options:
-     -l <repo_name>         Repository name on the mirror.
+
+     -l <repo-name>         Repository name on the mirror.
                             Default: ${repo_name}
+
      -n <namespace>         Repository namespace on the mirror.
                             Default: ${target_namespace}
+
      -m <mirror>            Fur mirror, can be 'github' or
                             'gitlab'.
                             Default: ${target_mirror}
-     -t <mirror_type>       It can be 'tree' or 'ci'.
+
+     -t <mirror-type>       It can be 'tree' or 'ci'.
                             Default: ${mirror_types[*]}
-     -L <git_protocol>      Git protocol. It can be 'http' or 'ssh'.
+
+     -L <git-protocol>      Git protocol. It can be 'http' or 'ssh'.
                             Default: ${git_protocol}
 
+     -M <retrieval-method>  Retrieval method for the Gur.
+                            It can be 'gh' or 'curl'.
+                            Default: ${retrieval_method}
+
   application options:
+
+     -w <repo-dir>          Directory containing the fur tree.
+                            To be set when download only is true,
+                            otherwise is temporary.
+                            Default: ${repo_dir}
+
+     -K <sig-dir>           Signatures keys directory.
+                            Default: ${sig_dir}
+
      -c                     Colors.
      -h                     This message.
      -v                     Enable verbose output
+
 ENDUSAGETEXT
   _printf \
     '%s\n' \
@@ -1944,7 +2009,7 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'P:A:p:dw:K:m:l:n:t:L:D:R:o:Tcvh?' \
+    'P:A:p:dw:K:m:l:n:t:L:D:R:o:TM:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -1976,6 +2041,8 @@ while \
       override_dependencies_check="${OPTARG}" ;;
     R)
       override_dependencies_resolve="${OPTARG}" ;;
+    M)
+      override_retrieval_method="${OPTARG}" ;;
     o)
       override_output_dir="${OPTARG}" ;;
     T)
@@ -2024,6 +2091,7 @@ app_opts=(
   "${#mirror_types[@]}"
   "${mirror_types[@]}"
   "${git_protocol}"
+  "${retrieval_method}"
   "${dependencies_check}"
   "${dependencies_resolve}"
   "${output_dir}"
