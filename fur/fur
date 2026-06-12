@@ -802,10 +802,10 @@ _fur_tree_get() {
   _msg_info \
     "${_msg[*]}"
   for _dir in "${_repo_dir}/fur/"*; do
+    _platform="$(
+      basename \
+        "${_dir}")"
     if [[ -d "${_dir}" ]]; then
-      _platform="$(
-        basename \
-          "${_dir}")"
       if [[ "${_platform}" != "${_target_platform}" ]]; then
         _platform_remove="true"
       fi || \
