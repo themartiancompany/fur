@@ -813,9 +813,10 @@ _fur_tree_get() {
          [[ "${_platform}" == "arch" ]]; then
         _platform_remove="false"
       fi
-      if [[ "${_target_platform}" == "android" ]] && \
-         [[ "${_platform}" == "android" ]]; then
-        _platform_remove="false"
+      if [[ "${_target_platform}" == "android" ]]; then
+        if [[ "${_platform}" == "termux" ]]; then
+          _platform_remove="false"
+        fi
       fi
     else
       _platform_remove="true"
