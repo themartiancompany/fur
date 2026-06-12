@@ -752,6 +752,7 @@ _fur_tree_get() {
     _pkgs_set=() \
     _oldpwd \
     _dir \
+    _dir_is_file \
     _pkgname \
     _pkg_file \
     _pkg_filename \
@@ -807,6 +808,10 @@ _fur_tree_get() {
         "${_dir}")"
     if [[ -d "${_dir}" ]]; then
       if [[ "${_platform}" != "${_target_platform}" ]]; then
+        _msg=(
+          "Target platform '${_target_platform}',"
+          "removing wrong platform '${_platform}'."
+        )
         _platform_remove="true"
       fi || \
       true
@@ -816,7 +821,7 @@ _fur_tree_get() {
           "Selecting directory"
           "'${_platform}' for platform"
           "'${_target_platform}'"
-          "for deletetion."
+          "for keeping."
         )
         _msg_info \
           "${_msg[*]}"
@@ -824,7 +829,8 @@ _fur_tree_get() {
       elif [[ "${_target_platform}" == "android" ]]; then
         if [[ "${_platform}" == "termux" ]]; then
           _msg=(
-            "Found 'termux' directory,"
+            "Found '${_platform}' directory"
+            "for target platform '${_target_platform}',"
             "not deleting."
           )
           _msg_info \
@@ -839,12 +845,21 @@ _fur_tree_get() {
       )
       _msg_info \
         "${_msg[*]}"
+      _dir_is_file="true"
+    fi
+    if [[ "${_dir_is_file}" == "true" ]]; then
+      _msg=(
+        "File '${_dir}' is a file,"
+        "deleting".
+      )
+      _msg_info \
+        "${_msg[*]}"
       _platform_remove="true"
     fi
     if [[ "${_platform_remove}" == "true" ]]; then
       _msg=(
         "Removing '${_dir}' because platform is"
-        "${_platform}."
+        "${_target_platform}."
       )
       _msg_info \
         "${_msg[*]}"
