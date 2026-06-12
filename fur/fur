@@ -838,13 +838,7 @@ _fur_tree_get() {
           _platform_remove="false"
         fi
       fi
-    else
-      _msg=(
-        "File '${_dir}' is a file,"
-        "deleting".
-      )
-      _msg_info \
-        "${_msg[*]}"
+    elif [[ ! -d "${_dir}" ]]; then
       _dir_is_file="true"
     fi
     if [[ "${_dir_is_file}" == "true" ]]; then
