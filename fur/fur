@@ -808,22 +808,43 @@ _fur_tree_get() {
           "${_dir}")"
       if [[ "${_platform}" != "${_target_platform}" ]]; then
         _platform_remove="true"
-      fi
+      fi || \
+      true
       if [[ "${_target_platform}" == "gnu" ]] && \
          [[ "${_platform}" == "arch" ]]; then
+        _msg=(
+          "Selecting directory"
+          "'${_platform}' for platform"
+          "'${_target_platform}'"
+          "for deletetion."
+        )
+        _msg_info \
+          "${_msg[*]}"
         _platform_remove="false"
-      fi
-      if [[ "${_target_platform}" == "android" ]]; then
+      elif [[ "${_target_platform}" == "android" ]]; then
         if [[ "${_platform}" == "termux" ]]; then
+          _msg=(
+            "Found 'termux' directory,"
+            "not deleting."
+          )
+          _msg_info \
+            "${_msg[*]}"
           _platform_remove="false"
         fi
       fi
     else
+      _msg=(
+        "File '${_dir}' is a file,"
+        "deleting".
+      )
+      _msg_info \
+        "${_msg[*]}"
       _platform_remove="true"
     fi
     if [[ "${_platform_remove}" == "true" ]]; then
       _msg=(
-        "Removing '${_dir}'."
+        "Removing '${_dir}' because platform is"
+        "${_platform}."
       )
       _msg_info \
         "${_msg[*]}"
