@@ -840,8 +840,6 @@ _fur_tree_get() {
         fi
       fi
     elif [[ ! -d "${_dir}" ]]; then
-      cat \
-        "${_dir}"
       _dir_is_file="true"
     fi
     if [[ "${_dir_is_file}" == "true" ]]; then
