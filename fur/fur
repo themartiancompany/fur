@@ -807,6 +807,7 @@ _fur_tree_get() {
       basename \
         "${_dir}")"
     if [[ -d "${_dir}" ]]; then
+      _dir_is_file="false"
       if [[ "${_platform}" != "${_target_platform}" ]]; then
         _msg=(
           "Target platform '${_target_platform}',"
@@ -859,7 +860,7 @@ _fur_tree_get() {
       _msg_info \
         "${_msg[*]}"
       rm \
-        -rf \
+        -vrf \
         "${_dir}" || \
       true
     fi
