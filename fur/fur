@@ -858,8 +858,7 @@ _fur_tree_get() {
     fi
     if [[ "${_platform_remove}" == "true" ]]; then
       _msg=(
-        "Removing '${_dir}' because platform is"
-        "${_target_platform}."
+        "Removing '${_dir}'."
       )
       _msg_info \
         "${_msg[*]}"
