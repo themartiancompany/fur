@@ -801,21 +801,26 @@ _fur_tree_get() {
   )
   _msg_info \
     "${_msg[*]}"
-  for _dir in "fur/"*; do
-    _platform="$(
-      basename \
-        "${_dir}")"
-    if [[ "${_platform}" != "${_target_platform}" ]]; then
+  for _dir in "${_repo_dir}/fur/"*; do
+    if [[ -d "${_dir}" ]]; then
+      _platform="$(
+        basename \
+          "${_dir}")"
+      if [[ "${_platform}" != "${_target_platform}" ]]; then
+        _platform_remove="true"
+      fi
+      if [[ "${_target_platform}" == "gnu" ]] && \
+         [[ "${_platform}" == "arch" ]]; then
+        _platform_remove="false"
+      fi
+      if [[ "${_target_platform}" == "android" ]] && \
+         [[ "${_platform}" == "android" ]]; then
+        _platform_remove="false"
+      fi
+    else
       _platform_remove="true"
     fi
-    if [[ "${_target_platform}" == "gnu" && \
-          "${_platform}" == "arch" ]] || \
-       [[ "${_target_platform}" == "android" && \
-          "${_platform}" == "termux" ]]; then
-      _platform_remove="false"
-    fi
-    if [[ ! -d "${_dir}" || \
-          "${_platform_remove}" == "true" ]]; then
+    if [[ "${_platform_remove}" == "true" ]]; then
       _msg=(
         "Removing '${_dir}'."
       )
