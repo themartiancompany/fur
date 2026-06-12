@@ -100,6 +100,7 @@ _global_variables() {
 _pkgs_repo_get() {
   local \
     _dir="${1}" \
+    _target_platform="${2}" \
     _pkgs_array=() \
     _find_opts=() \
     _find_global_opts=()
@@ -112,7 +113,7 @@ _pkgs_repo_get() {
   )
   mapfile \
     -d \
-    $'\0' \
+      $'\0' \
     _pkgs_array < \
     <(find \
         "${_dir}" \
@@ -126,9 +127,21 @@ _pkgs_repo_get() {
         \) \
         "${_find_opts[@]}" || \
       true)
-  _array_set \
-    "_pkgs_array" \
-    "_pkgs"
+  _pkgs+=(
+    "${_pkgs_array[@]}"
+  )
+  # mapfile \
+  #   -d \
+  #     $'\0' \
+  #   _pkgs < \
+  #   <(printf \
+  #        "%s\0" \
+  #        "${_pkgs_array[@]}" |
+  #      uniq \
+  #        --zero-terminated)
+  # _array_set \
+  #   "_pkgs_array" \
+  #   "_pkgs"
 }
 
 _pkgs_plain_get() {
@@ -742,6 +755,7 @@ _fur_tree_get() {
     _pkgname \
     _pkg_file \
     _pkg_filename \
+    _platform_remove \
     _msg=()
   if [[ "${_target_platform}" == "android" ]]; then
     _target_platform="termux"
@@ -791,8 +805,15 @@ _fur_tree_get() {
     _platform="$(
       basename \
         "${_dir}")"
+    if [[ "${_platform}" != "${_target_platform}" ]]; then
+      _platform_remove="true"
+    fi
+    if [[ "${_target_platform}" == "gnu" && \
+          "${_platform}" == "arch" ]]; then
+      _platform_remove="false"
+    fi
     if [[ ! -d "${_dir}" || \
-          "${_platform}" != "${_target_platform}" ]]; then
+          "${_platform_remove}" == "true" ]]; then
       rm \
         -rf \
         "${_dir}" || \
@@ -819,17 +840,24 @@ _fur_tree_get() {
   for _sig in "${_sigs[@]}"; do
     mv \
       "${_sig}" \
-      "${_repo_dir}" || ( \
-      _msg=(
+      "${_repo_dir}" || \
+    ( _msg=(
         "Error moving '${_sig}' into"
         "'${_repo_dir}'."
-      ) && \
+      )
       _msg_error \
         "${_msg[*]}" \
         0 )
   done
+  _pkgs=()
   _pkgs_repo_get \
-    "${_repo_dir}/fur"
+    "${_repo_dir}/fur" \
+    "${_target_platform}"
+  if [[ "${_target_platform}" == "gnu" ]]; then
+    _pkgs_repo_get \
+      "${_repo_dir}/fur" \
+      "arch"
+  fi
   if [[ "${_pkgs[*]}" == "" ]]; then
     _msg=(
       "Found no packages."
