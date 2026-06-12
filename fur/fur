@@ -809,7 +809,9 @@ _fur_tree_get() {
       _platform_remove="true"
     fi
     if [[ "${_target_platform}" == "gnu" && \
-          "${_platform}" == "arch" ]]; then
+          "${_platform}" == "arch" ]] || \
+       [[ "${_target_platform}" == "android" && \
+          "${_platform}" == "termux" ]]; then
       _platform_remove="false"
     fi
     if [[ ! -d "${_dir}" || \
