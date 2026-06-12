@@ -806,6 +806,7 @@ _fur_tree_get() {
     _platform="$(
       basename \
         "${_dir}")"
+    _platform_remove=""
     if [[ -d "${_dir}" ]]; then
       _dir_is_file="false"
       if [[ "${_platform}" != "${_target_platform}" ]]; then
@@ -813,6 +814,8 @@ _fur_tree_get() {
           "Target platform '${_target_platform}',"
           "removing wrong platform '${_platform}'."
         )
+        _msg_info \
+          "${_msg[*]}"
         _platform_remove="true"
       fi || \
       true
@@ -851,7 +854,13 @@ _fur_tree_get() {
         "${_msg[*]}"
       _platform_remove="true"
     fi
-    if [[ "${_platform_remove}" == "true" ]]; then
+    if [[ "${_platform_remove}" == "" ]]; then
+      _msg=(
+        "Object '${_dir}' not analyzed."
+      )
+      _msg_info \
+        "${_msg[*]}"
+    elif [[ "${_platform_remove}" == "true" ]]; then
       _msg=(
         "Removing '${_dir}'."
       )
