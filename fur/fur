@@ -816,6 +816,11 @@ _fur_tree_get() {
     fi
     if [[ ! -d "${_dir}" || \
           "${_platform_remove}" == "true" ]]; then
+      _msg=(
+        "Removing '${_dir}'."
+      )
+      _msg_info \
+        "${_msg[*]}"
       rm \
         -rf \
         "${_dir}" || \
@@ -825,13 +830,15 @@ _fur_tree_get() {
   _sigs_get \
     "${_repo_dir}/fur"
   if [[ "${_sigs[*]}" == "" ]]; then
+    tree \
+      "${_repo_dir}/fur"
     _msg=(
       "Found no signatures"
       "into '${_repo_dir}'."
     )
     _msg_error \
       "${_msg[*]}" \
-      1
+      0
   fi
   _msg=(
     "Found and moving signatures '${_sigs[*]}'"
