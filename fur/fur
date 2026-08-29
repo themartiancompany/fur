@@ -761,6 +761,9 @@ _fur_tree_get() {
   if [[ "${_target_platform}" == "android" ]]; then
     _target_platform="termux"
   fi
+  if [[ "${_target_platform}" == "windows" ]]; then
+    _target_platform="mingw64"
+  fi
   if [[ "${quiet}" == "y" ]]; then
     _clone_opts+=(
       --quiet
