@@ -62,7 +62,7 @@ install-configs:
 	  "$(DATA_DIR)"
 	cp \
 	  -r \
-          "configs" \
+	  "configs" \
 	  "$(DATA_DIR)"
 
 install-doc:
