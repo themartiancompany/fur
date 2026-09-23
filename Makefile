@@ -22,7 +22,7 @@
 PREFIX ?= /usr/local
 _PROJECT=fur
 DOC_DIR=$(DESTDIR)$(PREFIX)/share/doc/$(_PROJECT)
-DATA_DIR=$(DESTDIR)$(PREFIX)/share/$(_PROJECT)
+DATA_DIR==$(DESTDIR)$(PREFIX)/share/$(_PROJECT)
 BIN_DIR=$(DESTDIR)$(PREFIX)/bin
 MAN_DIR?=$(DESTDIR)$(PREFIX)/share/man
 
@@ -56,6 +56,15 @@ shellcheck:
 
 install: install-$(_PROJECT) install-doc install-man
 
+install-configs:
+
+	$(_INSTALL_DIR) \
+	  "$(DATA_DIR)"
+	cp \
+	  -r \
+          "configs" \
+	  "$(DATA_DIR)"
+
 install-doc:
 
 	$(_INSTALL_FILE) \
@@ -65,6 +74,8 @@ install-doc:
 
 install-$(_PROJECT):
 
+	make \
+	  install-configs
 	$(_INSTALL_EXE) \
 	  "$(_PROJECT)/$(_PROJECT)" \
 	  "$(BIN_DIR)/$(_PROJECT)"
@@ -79,4 +90,26 @@ install-man:
 	    "$(MAN_DIR)/man1/$${_file}.1"; \
 	done
 
-.PHONY: check install install-doc install-$(_PROJECT) install-man shellcheck
+uninstall: uninstall-configs uninstall-$(_PROJECT) uninstall-man
+
+uninstall-configs:
+
+	rm \
+	  -rf \
+	  "$(DATA_DIR)"
+
+uninstall-man:
+
+	for _file in $(_BASH_FILES); do \
+	  rm \
+	    -f \
+	    "$(MAN_DIR)/man1/$${_file}.1"; \
+	done
+
+uninstall-$(_PROJECT):
+
+	rm \
+	  -rf \
+	  "$(BIN_DIR)/$(_PROJECT)"
+
+.PHONY: check install install-configs install-doc install-$(_PROJECT) install-man shellcheck
