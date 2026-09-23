@@ -84,21 +84,36 @@ the tag '[Package request]'.
 Options
 =======
 
--w repo-dir             Directory containing the fur tree.
-                        To be set when download only is true,
-                        otherwise is temporary.
+-w repo-dir
 
--K sig-dir              Signatures directory.
--d                      Download only (noinstall).
+  Directory containing the fur tree.
+  To be set when download only is true,
+  otherwise is temporary.
 
--o output_dir           Output directory for the packages.
+-K sig-dir
 
--D <y/n>                Whether to skip dependencies check.
+  Signatures directory.
 
--R <y/n>                Resolve missing dependencies.
+-d
 
--T                      Clean cache at the end
-                        of the operation.
+  Download only (noinstall).
+
+-o output_dir
+
+  Output directory for the packages.
+
+-D <y/n>
+
+  Whether to skip dependencies check.
+
+-R <y/n>
+
+  Resolve missing dependencies.
+
+-T
+
+  Clean cache at the end
+  of the operation.
 
 Platform options
 =================
@@ -115,24 +130,33 @@ Platform options
 Mirror options
 =================
 
--l repo-name            Repository name on the mirror.
+-l repo-name
 
--n namespace            Repository namespace on the mirror.
+  Repository name on the mirror.
 
--m mirror               Fur mirror, can be 'github' or
-                        'gitlab'.
+-n namespace
 
--t mirror-type          It can be:
-                        * 'tree':
-                            A git repository branch
-                            named same as the package
-                            with a certain directory
-                            structure.
-                        * 'ci':
-                            Downloads package files
-                            from Github or Gitlab
-                            Ur mirrors using the 'gur'
-                            program.
+  Repository namespace on the mirror.
+
+-m mirror
+
+  Fur mirror, can be
+  - 'github',
+  - 'gitlab'.
+
+-t mirror-type
+
+  It can be:
+  - 'tree':
+      A git repository branch
+      named same as the package
+      with a certain directory
+      structure.
+  - 'ci':
+      Downloads package files
+      from Github or Gitlab
+      Ur mirrors using the 'gur'
+      program.
 
 -L git-protocol          Which protocol to use when
                          obtaining files with Git.
