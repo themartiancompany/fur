@@ -147,16 +147,20 @@ Mirror options
 -t mirror-type
 
   It can be:
+
   - 'tree':
-      A git repository branch
-      named same as the package
-      with a certain directory
-      structure.
+
+    A git repository branch
+    named same as the package
+    with a certain directory
+    structure.
+
   - 'ci':
-      Downloads package files
-      from Github or Gitlab
-      Ur mirrors using the 'gur'
-      program.
+
+    Downloads package files
+    from Github or Gitlab
+    Ur mirrors using the 'gur'
+    program.
 
 -L git-protocol          Which protocol to use when
                          obtaining files with Git.
