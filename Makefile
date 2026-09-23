@@ -22,7 +22,7 @@
 PREFIX ?= /usr/local
 _PROJECT=fur
 DOC_DIR=$(DESTDIR)$(PREFIX)/share/doc/$(_PROJECT)
-DATA_DIR==$(DESTDIR)$(PREFIX)/share/$(_PROJECT)
+DATA_DIR=$(DESTDIR)$(PREFIX)/share/$(_PROJECT)
 BIN_DIR=$(DESTDIR)$(PREFIX)/bin
 MAN_DIR?=$(DESTDIR)$(PREFIX)/share/man
 
