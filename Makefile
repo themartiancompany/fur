@@ -112,4 +112,4 @@ uninstall-$(_PROJECT):
 	  -rf \
 	  "$(BIN_DIR)/$(_PROJECT)"
 
-.PHONY: check install install-configs install-doc install-$(_PROJECT) install-man shellcheck
+.PHONY: check install install-configs install-doc install-$(_PROJECT) install-man shellcheck uninstall uninstall-configs uninstall-man uninstall-$(_PROJECT)
