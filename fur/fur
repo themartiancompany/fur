@@ -75,6 +75,8 @@ _requirements_gitlab_ci() {
 _global_variables() {
   install_date=""
   package_manager=""
+  pacman_conf=""
+  pacman_profile=""
   dependencies_check=""
   dependencies_resolve=""
   installed_packages=()
@@ -1433,13 +1435,15 @@ _fur() {
     _target_platform="${1}" \
     _arch="${2}" \
     _pkgmgr="${3}" \
-    _noinstall="${4}" \
-    _repo_dir="${5}" \
-    _sig_dir="${6}" \
-    _target_mirror="${7}" \
-    _target_namespace="${8}" \
-    _repo_name="${9}" \
-    _mirror_type_length="${10}" \
+    _pacman_conf="${4}" \
+    _pacman_profile="${5}" \
+    _noinstall="${6}" \
+    _repo_dir="${7}" \
+    _sig_dir="${8}" \
+    _target_mirror="${9}" \
+    _target_namespace="${10}" \
+    _repo_name="${11}" \
+    _mirror_type_length="${12}" \
     _mirror_types=() \
     _mirror_type \
     _git_protocol \
@@ -1463,18 +1467,18 @@ _fur() {
     in $(seq \
            "${_mirror_type_length}"); do
     _mirror_types+=(
-      "${11}"
+      "${13}"
     )
     shift
   done
-  _git_protocol="${11}"
-  _retrieval_method="${12}"
-  _dependencies_check="${13}"
-  _dependencies_resolve="${14}"
-  _output_dir="${15}"
-  _cache_clean="${16}"
+  _git_protocol="${13}"
+  _retrieval_method="${14}"
+  _dependencies_check="${15}"
+  _dependencies_resolve="${16}"
+  _output_dir="${17}"
+  _cache_clean="${18}"
   shift \
-    16
+    18
   _packages=(
     "$@"
   )
@@ -1869,6 +1873,61 @@ _retrieval_method_auto_detect() {
     "${_retrieval_method}"
 }
 
+_pacman_profile_auto_detect() {
+  local \
+    _pacman_profile
+  _pacman_profile="system"
+  if [[ "${dependencies_resolve}" == "n" ]]; then
+    _pacman_profile="emptyman"
+  fi
+  _set_override \
+    "pacman" \
+    "profile" \
+    "${_pacman_profile}"
+}
+
+_pacman_conf_check() {
+  local \
+    _pacman_conf="${1}" \
+    _msg=()
+  if [[ "${_pacman_conf}" != ""  ]]; then
+    if [[ ! -e "${_pacman_conf}" ]]; then
+      _msg=(
+        "Configuration file"
+        "'${_pacman_conf}' does"
+        "not exist."
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        1
+    fi
+  fi
+}
+
+_pacman_conf_auto_detect() {
+  local \
+    _msg=() \
+    _pacman_conf
+  _pacman_conf=""
+  if [[ -v "override_pacman_conf" && \
+        "${pacman_profile}" != "system" ]]; then
+    _msg=(
+      "Either you select a profile"
+      "or a package manager configuration"
+      "file, not both."
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      1
+  fi
+  _set_override \
+    "pacman" \
+    "conf" \
+    ""
+  _pacman_conf_check \
+    "${pacman_conf}"
+}
+
 # Set defaults and, if present, overrides
 # from fur command line option parameters
 _set_overrides() {
@@ -1934,6 +1993,8 @@ _set_overrides() {
     "dependencies" \
     "resolve" \
     "y"
+  _pacman_profile_auto_detect
+  _pacman_conf_auto_detect
   _output_dir_auto_detect
   if [[ "${installed_packages[*]}" == "" ]]; then
     installed_packages+=(
@@ -1954,28 +2015,30 @@ _set_overrides() {
 # Shows configuration options.
 _show_config() {
   _msg_info "${app_name} configuration"
-  _msg_info "             Install date:   ${install_date}"
-  _msg_info "         Output directory:   ${output_dir}"
-  _msg_info "            Download only:   ${download_only}"
-  _msg_info "              Clean cache:   ${cache_clean}"
-  _msg_info "        Package options:"
-  _msg_info "          Package manager:   ${package_manager}"
-  _msg_info "          Target platform:   ${target_platform}"
-  _msg_info "      Target architecture:   ${target_arch}"
-  _msg_info "        Install options:"
-  _msg_info "       Dependencies check:   ${dependencies_check}"
-  _msg_info "   Dependencies resolving:   ${dependencies_resolve}"
-  _msg_info "         Mirror options:"
-  _msg_info "            Target mirror:   ${target_mirror}"
-  _msg_info "         Target namespace:   ${target_namespace}"
-  _msg_info "          Repository name:   ${repo_name}"
-  _msg_info "             Mirror types:   ${mirror_types[*]}"
-  _msg_info "             Git protocol:   ${git_protocol}"
-  _msg_info "         Retrieval method:   ${retrieval_method}"
-  _msg_info "    Application options:"
-  _msg_info "           Repo directory:   ${repo_dir}"
-  _msg_info "     Signatures directory:   ${sig_dir}"
-  _msg_info " Packages to be installed:"
+  _msg_info "                  Install date:   ${install_date}"
+  _msg_info "              Output directory:   ${output_dir}"
+  _msg_info "                 Download only:   ${download_only}"
+  _msg_info "                   Clean cache:   ${cache_clean}"
+  _msg_info "             Package options:"
+  _msg_info "               Package manager:   ${package_manager}"
+  _msg_info "       Package manager profile:   ${pacman_profile}"
+  _msg_info " Package manager configuration:   ${pacman_conf}"
+  _msg_info "               Target platform:   ${target_platform}"
+  _msg_info "           Target architecture:   ${target_arch}"
+  _msg_info "             Install options:"
+  _msg_info "            Dependencies check:   ${dependencies_check}"
+  _msg_info "        Dependencies resolving:   ${dependencies_resolve}"
+  _msg_info "              Mirror options:"
+  _msg_info "                 Target mirror:   ${target_mirror}"
+  _msg_info "              Target namespace:   ${target_namespace}"
+  _msg_info "               Repository name:   ${repo_name}"
+  _msg_info "                  Mirror types:   ${mirror_types[*]}"
+  _msg_info "                  Git protocol:   ${git_protocol}"
+  _msg_info "              Retrieval method:   ${retrieval_method}"
+  _msg_info "         Application options:"
+  _msg_info "                Repo directory:   ${repo_dir}"
+  _msg_info "          Signatures directory:   ${sig_dir}"
+  _msg_info "      Packages to be installed:"
   _show_config_packages
 
 }
@@ -2033,15 +2096,44 @@ Usage:
   package options:
 
      -p <package-manager>   Package manager.
+                            It can have any compatible
+                            value. Tested with:
+                            - 'pacman',
+                            - 'inteppacman'.
                             Default: ${package_manager}
 
-     -P <platform>          Platform for which to retrieve packages,
-                            can be 'arch' or 'termux'.
+     -P <platform>          DogeOS base platform for which
+                            to retrieve packages,
+                            can be:
+                            - 'android',
+                            - 'gnu',
+                            - 'windows.
                             Default: ${target_platform}
 
      -A <architecture>      Architecture for which to retrieve packages,
-                            can be 'any', 'arm' or 'x86_64'.
+                            can be:
+                            - 'any',
+                            - 'arm' or
+                            -'x86_64'.
                             Default: ${target_arch}
+
+  package manager options:
+
+     -k <profile>           One of a set of pre-configured
+                            'pacman.conf's included with
+                            the fur.
+                            It can be:
+                            - 'system':
+                                it uses the system package
+                                manager configuration file;
+                            - 'emptyman':
+                                a configuration file for
+                                installing a package and
+                                all of its dependencies from
+                                the command line directly;
+                                useful when pacman is not
+                                the system package manager.
+                            Default: ${pacman_profile}   
 
   mirror options:
 
@@ -2051,18 +2143,45 @@ Usage:
      -n <namespace>         Repository namespace on the mirror.
                             Default: ${target_namespace}
 
-     -m <mirror>            Fur mirror, can be 'github' or
-                            'gitlab'.
+     -m <mirror>            Fur mirror, it can be:
+                            - 'github',
+                            - 'gitlab'.
                             Default: ${target_mirror}
 
-     -t <mirror-type>       It can be 'tree' or 'ci'.
+     -t <mirror-type>       It can be:
+                            - 'tree':
+                                A git repository branch
+                                named same as the package
+                                with a certain directory
+                                structure.
+                            - 'ci':
+                                Downloads package files
+                                from Github or Gitlab
+                                Ur mirrors using the 'gur'
+                                program.
+                            For more details about the mirror
+                            types consult the Fur manual
+                            with the 'man fur' command.
                             Default: ${mirror_types[*]}
 
-     -L <git-protocol>      Git protocol. It can be 'http' or 'ssh'.
+     -L <git-protocol>      Which protocol to use when
+                            obtaining files with Git.
+                            It can be
+                            - 'http',
+                            - 'ssh'.
                             Default: ${git_protocol}
 
-     -M <retrieval-method>  Retrieval method for the Gur.
-                            It can be 'gh' or 'curl'.
+     -M <retrieval-method>  Retrieval method to use
+                            when files are downloaded using
+                            the 'gur' program.
+                            It can be:
+                            - 'curl':
+                                Default method for when no
+                                Github user credentials are
+                                available.
+                            - 'gh':
+                                Download files using official
+                                Github CLI client 'gh'.
                             Default: ${retrieval_method}
 
   application options:
@@ -2094,7 +2213,7 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'P:A:p:dw:K:m:l:n:t:L:D:R:o:TM:cvh?' \
+    'P:A:p:C:k:dw:K:m:l:n:t:L:D:R:o:TM:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -2104,6 +2223,10 @@ while \
       override_target_arch="${OPTARG}" ;;
     p)
       override_package_manager="${OPTARG}" ;;
+    C)
+      override_pacman_conf="${OPTARG}" ;;
+    k)
+      override_pacman_profile="${OPTARG}" ;;
     d)
       override_download_only="true" ;;
     w)
@@ -2137,7 +2260,7 @@ while \
     v)
       override_quiet="n" ;;
     h|?)
-      _set_overrides && \
+      _set_overrides
       _usage \
         0 ;;
     *)
@@ -2153,7 +2276,7 @@ while \
   esac
 done
 shift \
-  $(( \
+  $((
     OPTIND - 1 \
   ))
 installed_packages=(
@@ -2167,6 +2290,8 @@ app_opts=(
   "${target_platform}"
   "${target_arch}"
   "${package_manager}"
+  "${pacman_conf}"
+  "${pacman_profile}"
   "${download_only}"
   "${repo_dir}"
   "${sig_dir}"
