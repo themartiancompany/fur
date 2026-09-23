@@ -122,11 +122,26 @@ Mirror options
 -m mirror               Fur mirror, can be 'github' or
                         'gitlab'.
 
--t mirror-type          It can be 'tree' or 'ci'.
+-t mirror-type          It can be:
+                        - 'tree':
+                            A git repository branch
+                            named same as the package
+                            with a certain directory
+                            structure.
+                        - 'ci':
+                            Downloads package files
+                            from Github or Gitlab
+                            Ur mirrors using the 'gur'
+                            program.
 
--L git-protocol         Git protocol. Relevant when
-                        mirror type is set to 'tree'.
-                        It can be 'https' or 'ssh'.
+-L git-protocol          Which protocol to use when
+                         obtaining files with Git.
+                         Relevant when mirror type is
+                         set to 'tree'.
+                         It can be
+                         - 'http',
+                         - 'ssh'.
+
 
 Application options
 =====================
