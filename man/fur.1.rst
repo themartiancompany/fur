@@ -123,12 +123,12 @@ Mirror options
                         'gitlab'.
 
 -t mirror-type          It can be:
-                        - 'tree':
+                        * 'tree':
                             A git repository branch
                             named same as the package
                             with a certain directory
                             structure.
-                        - 'ci':
+                        * 'ci':
                             Downloads package files
                             from Github or Gitlab
                             Ur mirrors using the 'gur'
