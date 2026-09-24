@@ -1689,7 +1689,8 @@ _pkgmgr_opts_get() {
   local \
     _pkgmgr="${1}" \
     _name \
-    _opts=()
+    _opts=() \
+    _data_dir
   _name="$(
     basename \
       "${_pkgmgr}")"
@@ -1711,6 +1712,16 @@ _pkgmgr_opts_get() {
     _opts+=(
       -Udd
     )
+  fi
+  if [[ "${_pacman_profile}" == "emptyman" ]]; then
+    _configs_dir="$(
+      _get_usr)/share/fur/configs/${_target_platform}"
+    if [[ "${_target_plaform}" == "gnu" ]]; then
+      _pacman_conf="${_configs_dir}/any.conf"
+    else
+      _pacman_conf="${_configs_dir}/${_target_arch}.conf"
+    fi
+    _config_file=
   fi
   _opts+=(
     --overwrite="*"
