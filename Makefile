@@ -43,7 +43,26 @@ _INSTALL_EXE=\
   install \
   -vDm755
 
-all:
+all: build-man
+
+build-man:
+
+	git \
+	  submodule \
+	    update \
+	    --init \
+	      "man" || \
+	true
+	mkdir \
+	  -p \
+	  "build/man"
+	cd \
+	  "man"; \
+	make \
+	  build-man
+	cp \
+	  "man/build/"* \
+	  "build/man"
 
 check: shellcheck
 
@@ -82,13 +101,10 @@ install-$(_PROJECT):
 
 install-man:
 
-	$(_INSTALL_DIR) \
-	  "$(MAN_DIR)/man1"
-	for _file in $(_BASH_FILES); do \
-	  rst2man \
-	    "man/$${_file}.1.rst" \
-	    "$(MAN_DIR)/man1/$${_file}.1"; \
-	done
+	cd \
+	  "man"; \
+	make \
+	  install-man
 
 uninstall: uninstall-configs uninstall-$(_PROJECT) uninstall-man
 
