@@ -1,3 +1,6 @@
 [submodule "man"]
 	path = man
 	url = https://github.com/themartiancompany/fur-man
+[submodule "docs"]
+	path = docs
+	url = https://github.com/themartiancompany/fur-docs
