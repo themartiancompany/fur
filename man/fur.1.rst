@@ -111,12 +111,12 @@ Options
   Output directory for the packages.
 
 
--D y\/n
+-D <y\/n>
 
   Whether to skip dependencies check.
 
 
--R y\/n
+-R <y\/n>
 
   Resolve missing dependencies.
 
