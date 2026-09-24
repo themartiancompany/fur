@@ -101,6 +101,8 @@ install-$(_PROJECT):
 
 install-man:
 
+	make \
+	  build-man
 	cd \
 	  "man"; \
 	make \
