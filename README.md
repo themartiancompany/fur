@@ -23,8 +23,6 @@
 
 [`fur`](
   https://github.com/themartiancompany/fur)
-([`gur`](
-  https://github.com/themartiancompany/gur)
 [tree](
   https://github.com/themartiancompany/fur/tree/main/docs/MirrorTypes.md)
 branch.
