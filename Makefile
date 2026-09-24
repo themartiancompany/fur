@@ -19,6 +19,7 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+SHELL ?= bash
 PREFIX ?= /usr/local
 _PROJECT=fur
 DOC_DIR=$(DESTDIR)$(PREFIX)/share/doc/$(_PROJECT)
