@@ -159,9 +159,13 @@ Platform options
   DogeOS base platform for which
   to retrieve packages,
   can be:
+
   - android
+
   - gnu
+
   - windows.
+
   For more informations about
   base platforms consult
   DogeOS documentation.
@@ -172,10 +176,31 @@ Platform options
   Architecture for which
   to retrieve packages.
   It can be
-  - 'aarch64',
-  - 'any',
-  - 'arm',
-  - 'x86_64'.
+
+  - aarch64
+
+    For packages including
+    ARM64 (ARMv8) processors
+    compatible binaries.
+
+  - any
+
+    For packages which do not
+    include any architecture-specific
+    binary.
+
+  - arm
+
+    Normally this architecture code is used
+    to refer to ARMv5 architecture but Termux
+    environment on ARMv7 processors refer to
+    themselves as such.
+
+  - x86_64
+
+    The architecture used on most personal
+    computers.
+
   For more informations about
   adding support for a new
   architecture consult
@@ -190,35 +215,41 @@ Mirror options
   Repository name of the mirror.
   Default value is 'fur'.
 
+
 -n namespace
 
   Repository namespace for the mirror.
   Default value is 'themartiancompany'.
 
+
 -m mirror
 
   Fur mirror.
-  can be
-  - 'github',
-  - 'gitlab'.
+  It can be:
+
+  - github
+
+  - gitlab
+
 
 -t mirror-type
 
   It can be:
 
-  - 'tree':
+  - tree
 
     A git repository branch
     named same as the package
     with a certain directory
     structure.
 
-  - 'ci':
+  - ci
 
     Downloads package files
     from Github or Gitlab
     Ur mirrors using the 'gur'
     program.
+
 
 -L git-protocol
 
@@ -227,8 +258,10 @@ Mirror options
   Relevant when mirror type is
   set to 'tree'.
   It can be
-  - 'http',
-  - 'ssh'.
+
+  - http
+
+  - ssh
 
 
 Application options
@@ -246,20 +279,25 @@ Application options
 
   Enable verbose output
 
+
 Bugs
 ====
 
 https://github.com/themartiancompany/fur/-/issues
+
 
 Copyright
 =========
 
 Copyright Pellegrino Prevete. AGPL-3.0.
 
+
 See also
 ========
 
 * ur
+* gur
 * lur
+
 
 .. include:: variables.rst
