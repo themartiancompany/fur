@@ -2084,11 +2084,13 @@ _usage() {
 
 Fallback User Repository.
 
+
 Usage:
 
   ${app_name}
     [options]
     [packages]
+
 
   options:
 
@@ -2102,6 +2104,7 @@ Usage:
                             of the operation.
                             Default: ${cache_clean}
 
+
   install options:
 
      -D <y/n>               Whether to check for package
@@ -2110,6 +2113,7 @@ Usage:
 
      -R <y/n>               Resolve missing dependencies.
                             Default: ${dependencies_resolve}
+
 
   package options:
 
@@ -2135,6 +2139,7 @@ Usage:
                             -'x86_64'.
                             Default: ${target_arch}
 
+
   package manager options:
 
      -k <profile>           One of a set of pre-configured
@@ -2152,6 +2157,14 @@ Usage:
                                 useful when pacman is not
                                 the system package manager.
                             Default: ${pacman_profile}   
+
+     -C <config-file-path>  Set a configuration file for the
+                            fur underlying's package manager
+                            through the 'fur' program rather
+                            than as an option for the package
+                            manager program.
+                            Default: ${pacman_conf}
+
 
   mirror options:
 
@@ -2201,6 +2214,7 @@ Usage:
                                 Download files using official
                                 Github CLI client 'gh'.
                             Default: ${retrieval_method}
+
 
   application options:
 
