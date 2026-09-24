@@ -25,16 +25,19 @@
 fur
 =================
 
+
 --------------------------------------------------------------
 Fallback User Repository
 --------------------------------------------------------------
 :Version: fur |version|
 :Manual section: 1
 
+
 Synopsis
 ========
 
 fur *[options]* *[packages]*
+
 
 Description
 ===========
@@ -50,6 +53,7 @@ as well, given the Ur is the DogeOS application store.
 
 I suppose nobody should explain how a fur relates
 to a Doge, no?
+
 
 Repo structures
 ================
@@ -81,6 +85,7 @@ of the public Fallback User repository
 Github mirror at the link reported below using
 the tag '[Package request]'.
 
+
 Options
 =======
 
@@ -90,41 +95,91 @@ Options
   To be set when download only is true,
   otherwise is temporary.
 
+
 -K sig-dir
 
   Signatures directory.
+
 
 -d
 
   Download only (noinstall).
 
+
 -o output_dir
 
   Output directory for the packages.
+
 
 -D <y/n>
 
   Whether to skip dependencies check.
 
+
 -R <y/n>
 
   Resolve missing dependencies.
+
 
 -T
 
   Clean cache at the end
   of the operation.
 
+
 Platform options
 =================
 
--p package_manager      Package manager.
+-p package_manager
 
--P platform             Platform for which to retrieve packages,
-                        can be 'arch' or 'termux'.
+  Package manager.
+  It can have any compatible
+  value. Tested with:
 
--A architecture         Architecture for which to retrieve packages,
-                        can be 'any', 'arm' or 'x86_64'.
+  - inteppacman
+
+    Default Ur package manager,
+    extra to pacman has support
+    for managing native Android
+    applications packages same
+    as pacman packages.
+    For more information on how
+    to package native Android
+    applications on the Ur,
+    consult Ur documentation.
+
+  - pacman
+
+    Default fallback
+    package manager.
+
+
+-P platform
+
+  DogeOS base platform for which
+  to retrieve packages,
+  can be:
+  - android
+  - gnu
+  - windows.
+  For more informations about
+  base platforms consult
+  DogeOS documentation.
+
+
+-A architecture
+
+  Architecture for which
+  to retrieve packages.
+  It can be
+  - 'aarch64',
+  - 'any',
+  - 'arm',
+  - 'x86_64'.
+  For more informations about
+  adding support for a new
+  architecture consult
+  Reallymakepkg documentation.
 
 
 Mirror options
@@ -132,15 +187,18 @@ Mirror options
 
 -l repo-name
 
-  Repository name on the mirror.
+  Repository name of the mirror.
+  Default value is 'fur'.
 
 -n namespace
 
-  Repository namespace on the mirror.
+  Repository namespace for the mirror.
+  Default value is 'themartiancompany'.
 
 -m mirror
 
-  Fur mirror, can be
+  Fur mirror.
+  can be
   - 'github',
   - 'gitlab'.
 
@@ -162,23 +220,31 @@ Mirror options
     Ur mirrors using the 'gur'
     program.
 
--L git-protocol          Which protocol to use when
-                         obtaining files with Git.
-                         Relevant when mirror type is
-                         set to 'tree'.
-                         It can be
-                         - 'http',
-                         - 'ssh'.
+-L git-protocol
+
+  Which protocol to use when
+  obtaining files with Git.
+  Relevant when mirror type is
+  set to 'tree'.
+  It can be
+  - 'http',
+  - 'ssh'.
 
 
 Application options
 =====================
 
--h                      Display help.
+-h
 
--c                      Enable color output
+  Display help.
 
--v                      Enable verbose output
+-c
+
+  Enable color output
+
+-v
+
+  Enable verbose output
 
 Bugs
 ====
