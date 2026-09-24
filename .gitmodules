@@ -1,0 +1,3 @@
+[submodule "man"]
+	path = man
+	url = https://github.com/themartiancompany/fur-man
