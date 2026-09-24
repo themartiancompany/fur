@@ -1708,7 +1708,7 @@ _pkgmgr_opts_get() {
     if [[ "${_pacman_profile}" == "emptyman" ]]; then
       _configs_dir="$(
         _get_usr)/share/fur/configs/${_target_platform}"
-      if [[ "${_target_plaform}" == "gnu" ]]; then
+      if [[ "${_target_platform}" == "gnu" ]]; then
         _pacman_conf="${_configs_dir}/any.conf"
       else
         _pacman_conf="${_configs_dir}/${_target_arch}.conf"
