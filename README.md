@@ -24,5 +24,5 @@
 [`fur`](
   https://github.com/themartiancompany/fur)
 [tree](
-  https://github.com/themartiancompany/fur-docs/tree/main/MirrorTypes.md)
+  https://github.com/themartiancompany/fur-docs/tree/master/MirrorTypes.md)
 branch.
