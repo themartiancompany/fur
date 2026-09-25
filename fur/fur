@@ -1690,7 +1690,8 @@ _pkgmgr_opts_get() {
     _pkgmgr="${1}" \
     _name \
     _opts=() \
-    _configs_dir
+    _configs_dir \
+    _profiles_dir
   _name="$(
     basename \
       "${_pkgmgr}")"
@@ -1706,9 +1707,13 @@ _pkgmgr_opts_get() {
   fi
   if [[ "${_pacman_profile}" != "" ]]; then
     if [[ "${_pacman_profile}" == "emptyman" ]]; then
-      _configs_dir="$(
-        _get_usr)/share/fur/configs/${_pacman_profile}/${_target_platform}"
+      _profiles_dir="$(
+        _get_usr)/share/fur/configs/"
+      _configs_dir="${_profiles_dir}/${_pacman_profile}/${_target_platform}"
       if [[ "${_target_platform}" == "gnu" ]]; then
+        _pacman_conf="${_configs_dir}/any.conf"
+      elif [[ "${_target_platform}" == "windows" ]]; then
+        _configs_dir="${_profiles_dir}/${_pacman_profile}/mingw64"
         _pacman_conf="${_configs_dir}/any.conf"
       else
         _pacman_conf="${_configs_dir}/${_arch}.conf"
